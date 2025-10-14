@@ -82,12 +82,10 @@
         }
 
         /* ==================== SECÇÕES ==================== */
-        /* IMPORTANTE: Todas as secções começam ocultas */
         section {
             display: none !important;
         }
 
-        /* Apenas secções com .active ficam visíveis */
         section.active {
             display: flex !important;
             animation: fadeIn 0.4s ease-in-out;
@@ -526,7 +524,8 @@
                 'image/png': [0x89, 0x50, 0x4E, 0x47],
                 'image/webp': [0x52, 0x49, 0x46, 0x46]
             },
-            requestTimeout: 60000 // 60 segundos
+            requestTimeout: 60000, // 60 segundos
+            useFormData: true // Usar FormData em vez de JSON
         };
 
         // ==================== ESTADO DA APLICAÇÃO ====================
@@ -540,21 +539,18 @@
         // ==================== GESTÃO DE UI ====================
         const UI = {
             showSection(sectionName) {
-                console.log(`Mudando para secção: ${sectionName}`);
+                console.log(`📍 Mudando para secção: ${sectionName}`);
                 
-                // Ocultar TODAS as secções
                 document.querySelectorAll('section').forEach(section => {
                     section.classList.remove('active');
                 });
                 
-                // Mostrar APENAS a secção específica
                 const section = document.getElementById(`${sectionName}-section`);
                 if (section) {
                     section.classList.add('active');
                     AppState.currentView = sectionName;
-                    console.log(`Secção ${sectionName} agora visível`);
                 } else {
-                    console.error(`Secção ${sectionName} não encontrada`);
+                    console.error(`❌ Secção ${sectionName} não encontrada`);
                 }
             },
 
@@ -564,9 +560,8 @@
             },
 
             resetApp() {
-                console.log('A resetar aplicação');
+                console.log('🔄 A resetar aplicação');
                 
-                // Limpar estado
                 AppState.currentFile = null;
                 if (AppState.originalImageUrl) {
                     URL.revokeObjectURL(AppState.originalImageUrl);
@@ -574,13 +569,11 @@
                 AppState.originalImageUrl = null;
                 AppState.editedImageUrl = null;
 
-                // Limpar inputs
                 document.getElementById('file-input').value = '';
                 document.getElementById('preview-original').src = '';
                 document.getElementById('result-original').src = '';
                 document.getElementById('result-edited').src = '';
 
-                // Voltar ao upload
                 this.showSection('upload');
             }
         };
@@ -588,12 +581,10 @@
         // ==================== GESTÃO DE FICHEIROS ====================
         const FileHandler = {
             validate(file) {
-                // Verificar se o ficheiro existe
                 if (!file) {
                     return { valid: false, error: 'Nenhum ficheiro selecionado.' };
                 }
 
-                // Verificar tamanho
                 if (file.size > CONFIG.maxFileSize) {
                     const maxMB = CONFIG.maxFileSize / 1024 / 1024;
                     return { 
@@ -602,7 +593,6 @@
                     };
                 }
 
-                // Verificar formato
                 if (!CONFIG.acceptedFormats.includes(file.type)) {
                     return { 
                         valid: false, 
@@ -614,12 +604,10 @@
             },
 
             async validateRealMimeType(file) {
-                // Ler os primeiros bytes do ficheiro
                 try {
                     const buffer = await file.slice(0, 4).arrayBuffer();
                     const bytes = new Uint8Array(buffer);
 
-                    // Verificar magic numbers
                     for (const [mimeType, signature] of Object.entries(CONFIG.acceptedMimeTypes)) {
                         if (signature.every((byte, i) => bytes[i] === byte)) {
                             return mimeType;
@@ -628,7 +616,7 @@
 
                     return null;
                 } catch (error) {
-                    console.error('Erro ao validar MIME type:', error);
+                    console.error('❌ Erro ao validar MIME type:', error);
                     return file.type;
                 }
             },
@@ -647,7 +635,7 @@
                 const img = document.getElementById('preview-original');
                 
                 img.onload = () => {
-                    console.log('Preview criado com sucesso');
+                    console.log('✅ Preview criado com sucesso');
                 };
                 
                 img.onerror = () => {
@@ -663,40 +651,83 @@
         const API = {
             async sendToWebhook(file) {
                 try {
-                    console.log('A enviar para webhook:', CONFIG.webhookUrl);
+                    console.log('📤 A enviar para webhook:', CONFIG.webhookUrl);
+                    console.log('📁 Ficheiro:', file.name, '|', (file.size / 1024).toFixed(2), 'KB');
                     
-                    // Converter para base64
-                    const base64 = await FileHandler.toBase64(file);
+                    let response;
+                    
+                    if (CONFIG.useFormData) {
+                        // MÉTODO 1: FormData (recomendado para n8n)
+                        console.log('📦 Usando FormData...');
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        formData.append('filename', file.name);
+                        formData.append('mimeType', file.type);
 
-                    // Criar payload
-                    const payload = {
-                        image: base64,
-                        filename: file.name,
-                        mimeType: file.type,
-                        size: file.size
-                    };
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), CONFIG.requestTimeout);
 
-                    // Fazer request com timeout
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), CONFIG.requestTimeout);
+                        response = await fetch(CONFIG.webhookUrl, {
+                            method: 'POST',
+                            body: formData,
+                            signal: controller.signal
+                        });
 
-                    const response = await fetch(CONFIG.webhookUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(payload),
-                        signal: controller.signal
-                    });
+                        clearTimeout(timeoutId);
+                        
+                    } else {
+                        // MÉTODO 2: JSON com base64 (alternativo)
+                        console.log('📦 Usando JSON/base64...');
+                        const base64 = await FileHandler.toBase64(file);
+                        
+                        // Remover prefixo data:image/... para reduzir tamanho
+                        const base64Clean = base64.split(',')[1];
+                        
+                        const payload = {
+                            image: base64Clean,
+                            filename: file.name,
+                            mimeType: file.type,
+                            size: file.size
+                        };
 
-                    clearTimeout(timeoutId);
+                        console.log('📏 Tamanho da payload:', (JSON.stringify(payload).length / 1024).toFixed(2), 'KB');
+
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), CONFIG.requestTimeout);
+
+                        response = await fetch(CONFIG.webhookUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(payload),
+                            signal: controller.signal
+                        });
+
+                        clearTimeout(timeoutId);
+                    }
+
+                    console.log('📡 Status da resposta:', response.status, response.statusText);
 
                     if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('❌ Erro do servidor:', errorText);
                         throw new Error(`Erro ${response.status}: ${response.statusText}`);
                     }
 
-                    const result = await response.json();
-                    console.log('Resposta do webhook:', result);
+                    const contentType = response.headers.get('content-type');
+                    console.log('📄 Content-Type:', contentType);
+
+                    let result;
+                    if (contentType && contentType.includes('application/json')) {
+                        result = await response.json();
+                    } else {
+                        const text = await response.text();
+                        console.log('📝 Resposta (texto):', text.substring(0, 200));
+                        result = { editedImage: text };
+                    }
+
+                    console.log('✅ Resposta do webhook:', result);
 
                     // Validar resposta
                     if (!result.editedImage && !result.image) {
@@ -706,18 +737,18 @@
                     return {
                         success: true,
                         editedImage: result.editedImage || result.image,
-                        originalImage: result.originalImage || base64
+                        originalImage: result.originalImage || AppState.originalImageUrl
                     };
 
                 } catch (error) {
-                    console.error('Erro na comunicação com webhook:', error);
+                    console.error('❌ Erro na comunicação com webhook:', error);
                     
                     if (error.name === 'AbortError') {
                         throw new Error('Tempo limite excedido. A imagem pode ser muito grande.');
                     }
 
                     if (error.message.includes('Failed to fetch')) {
-                        throw new Error('Erro de conexão. Verifique a sua internet.');
+                        throw new Error('Erro de conexão. Verifique:\n• Webhook está ativo?\n• CORS configurado?\n• Internet funcional?');
                     }
 
                     throw error;
@@ -728,7 +759,7 @@
         // ==================== EVENT HANDLERS ====================
         const Events = {
             init() {
-                console.log('A inicializar eventos...');
+                console.log('🚀 A inicializar eventos...');
                 this.initDropZone();
                 this.initFileInput();
                 this.initButtons();
@@ -755,7 +786,6 @@
                 });
 
                 dropZone.addEventListener('click', (e) => {
-                    // Não abrir file picker se clicaram no botão
                     if (e.target.tagName !== 'BUTTON') {
                         document.getElementById('file-input').click();
                     }
@@ -770,54 +800,42 @@
             },
 
             async handleFileSelect(file) {
-                console.log('Ficheiro selecionado:', file?.name);
+                console.log('📁 Ficheiro selecionado:', file?.name);
                 
-                // Validar ficheiro
                 const validation = FileHandler.validate(file);
                 if (!validation.valid) {
                     UI.showError(validation.error);
                     return;
                 }
 
-                // Validar MIME type real
                 const realMimeType = await FileHandler.validateRealMimeType(file);
                 if (!realMimeType || !CONFIG.acceptedFormats.includes(realMimeType)) {
                     UI.showError('Tipo de ficheiro inválido. Use apenas imagens JPG, PNG ou WEBP.');
                     return;
                 }
 
-                // Guardar ficheiro
                 AppState.currentFile = file;
-
-                // Criar preview
                 FileHandler.createPreview(file);
-
-                // Mostrar secção de preview
                 UI.showSection('preview');
             },
 
             initButtons() {
-                // Botão enviar
                 document.getElementById('btn-send').addEventListener('click', () => {
                     this.handleSend();
                 });
 
-                // Botão cancelar
                 document.getElementById('btn-cancel').addEventListener('click', () => {
                     UI.resetApp();
                 });
 
-                // Botão download
                 document.getElementById('btn-download').addEventListener('click', () => {
                     this.handleDownload();
                 });
 
-                // Botão nova foto
                 document.getElementById('btn-new').addEventListener('click', () => {
                     UI.resetApp();
                 });
 
-                // Botão retry
                 document.getElementById('btn-retry').addEventListener('click', () => {
                     UI.resetApp();
                 });
@@ -825,26 +843,22 @@
 
             async handleSend() {
                 try {
-                    console.log('A enviar imagem para processamento...');
+                    console.log('🚀 A enviar imagem para processamento...');
                     
-                    // Mostrar loading
                     UI.showSection('loading');
 
-                    // Enviar para webhook
                     const result = await API.sendToWebhook(AppState.currentFile);
 
-                    // Guardar imagem editada
                     AppState.editedImageUrl = result.editedImage;
 
-                    // Mostrar resultado
                     document.getElementById('result-original').src = AppState.originalImageUrl;
                     document.getElementById('result-edited').src = result.editedImage;
 
-                    console.log('Imagem processada com sucesso');
+                    console.log('✅ Imagem processada com sucesso');
                     UI.showSection('result');
 
                 } catch (error) {
-                    console.error('Erro ao processar imagem:', error);
+                    console.error('❌ Erro ao processar imagem:', error);
                     UI.showError(error.message || 'Erro ao processar a imagem. Tente novamente.');
                 }
             },
@@ -855,31 +869,33 @@
                     return;
                 }
 
-                console.log('A fazer download da imagem...');
+                console.log('💾 A fazer download da imagem...');
 
-                // Criar link de download
                 const link = document.createElement('a');
                 link.href = AppState.editedImageUrl;
                 
-                // Nome do ficheiro
                 const timestamp = new Date().getTime();
                 const originalName = AppState.currentFile?.name || 'imagem';
                 const extension = originalName.split('.').pop();
                 link.download = `editada_${timestamp}.${extension}`;
                 
-                // Trigger download
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 
-                console.log('Download iniciado');
+                console.log('✅ Download iniciado');
             }
         };
 
         // ==================== INICIALIZAÇÃO ====================
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('=== O fotografo inicializado ===');
-            console.log('Webhook URL:', CONFIG.webhookUrl);
+            console.log('═══════════════════════════════════════');
+            console.log('  O fotografo - Editor de Fotografias  ');
+            console.log('═══════════════════════════════════════');
+            console.log('🌐 Webhook URL:', CONFIG.webhookUrl);
+            console.log('📦 Modo de envio:', CONFIG.useFormData ? 'FormData' : 'JSON/base64');
+            console.log('📏 Tamanho máximo:', (CONFIG.maxFileSize / 1024 / 1024), 'MB');
+            console.log('═══════════════════════════════════════');
             Events.init();
         });
     </script>
