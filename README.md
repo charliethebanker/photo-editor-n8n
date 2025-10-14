@@ -39,6 +39,130 @@ Página web moderna para upload de fotografias, processamento automático atrav�
 - **Hosting**: Vercel
 - **Deployment**: Auto-deploy via GitHub
 
+## 🔧 Configuração do Webhook n8n
+
+### ⚠️ IMPORTANTE: Configuração CORS
+
+O webhook **DEVE** estar configurado para aceitar requests do domínio Vercel.
+
+### Passo 1: Configurar o Webhook Node no n8n
+
+1. **Adicionar Webhook Node** ao workflow
+2. **Configurações do Webhook:**
+   ```
+   HTTP Method: POST
+   Path: /webhook/fotografo
+   Authentication: None (ou conforme necessário)
+   Response Mode: Last Node
+   Response Code: 200
+   ```
+
+3. **Response Headers (CRUCIAL!):**
+   ```json
+   {
+     "Access-Control-Allow-Origin": "*",
+     "Access-Control-Allow-Methods": "POST, OPTIONS",
+     "Access-Control-Allow-Headers": "Content-Type"
+   }
+   ```
+
+### Passo 2: Configuração do n8n Server
+
+Se estiveres a usar n8n self-hosted, adiciona ao ficheiro `.env`:
+
+```bash
+# Permitir CORS
+N8N_CORS_ORIGIN=https://photo-editor-n8n-mim1qdk3m-carlos-projects-e332b665.vercel.app
+```
+
+Ou para permitir qualquer origem (apenas desenvolvimento):
+```bash
+N8N_CORS_ORIGIN=*
+```
+
+### Passo 3: Estrutura do Workflow n8n
+
+**Exemplo de workflow básico:**
+
+```
+1. Webhook (Trigger)
+   ↓
+2. Code Node (processar imagem)
+   ↓
+3. Respond to Webhook (retornar resultado)
+```
+
+**Webhook recebe:**
+- FormData: `file`, `filename`, `mimeType`
+
+**Deve retornar JSON:**
+```json
+{
+  "success": true,
+  "editedImage": "data:image/jpeg;base64,..." ou "https://url-da-imagem"
+}
+```
+
+### Passo 4: Testar o Webhook
+
+**Teste 1: Via cURL**
+```bash
+curl -X POST https://olancador.pt/webhook/fotografo \
+  -F "file=@test.jpg" \
+  -F "filename=test.jpg" \
+  -F "mimeType=image/jpeg"
+```
+
+**Teste 2: Via Postman**
+1. Método: POST
+2. URL: https://olancador.pt/webhook/fotografo
+3. Body: form-data
+4. Adicionar: file (File), filename (Text), mimeType (Text)
+
+## 🐛 Resolução de Problemas
+
+### "Erro de conexão" - CORS
+
+**Problema:** O browser bloqueia o request por CORS.
+
+**Solução:**
+1. Verificar se n8n tem CORS configurado (ver acima)
+2. Adicionar response headers no Webhook Node
+3. Configurar `N8N_CORS_ORIGIN` no servidor n8n
+
+**Debug no Console (F12):**
+```
+❌ Failed to fetch
+Access to fetch at 'https://olancador.pt/webhook/fotografo' 
+from origin 'https://photo-editor-n8n-...' has been blocked by CORS
+```
+
+### Webhook não recebe dados
+
+**Verificar:**
+1. ✅ Webhook está ativo no n8n?
+2. ✅ URL está correta: `https://olancador.pt/webhook/fotografo`
+3. ✅ Workflow está em execução (não em teste)?
+4. ✅ n8n tem acesso público à internet?
+
+**Debug:**
+- Verificar executions no n8n
+- Ver logs do servidor n8n
+- Testar webhook com cURL/Postman primeiro
+
+### "Ficheiro muito grande"
+
+**Solução:**
+- Comprimir imagem antes do upload
+- Máximo: 10MB
+- Ajustar limite se necessário no código
+
+### "Formato não suportado"
+
+**Solução:**
+- Usar apenas: JPG, PNG ou WEBP
+- Converter imagem se necessário
+
 ## 📋 Estrutura do Projeto
 
 ```
@@ -48,31 +172,40 @@ photo-editor-n8n/
 └── CHANGELOG.md       # Histórico de alterações
 ```
 
-## 🔧 Configuração
+## 📝 Desenvolvimento
 
-### Webhook n8n
+### Formato de Envio
 
-O projeto está configurado para enviar imagens para:
+Por defeito usa **FormData**:
+```javascript
+const formData = new FormData();
+formData.append('file', file);
+formData.append('filename', file.name);
+formData.append('mimeType', file.type);
 ```
-https://olancador.pt/webhook/fotografo
-```
 
-**Formato esperado da resposta:**
-```json
-{
-  "success": true,
-  "editedImage": "data:image/jpeg;base64,..." ou "https://..."
+Para usar **JSON/base64** (alternativo), alterar em `index.html`:
+```javascript
+CONFIG = {
+    ...
+    useFormData: false  // Mudar para false
 }
 ```
 
-### Deploy no Vercel
+### Validações Implementadas
 
-✅ **Deploy ativo e configurado!**
+- **Tamanho**: Máximo 10MB
+- **Formatos**: JPEG, PNG, WEBP
+- **Tipo real**: Verificação de magic numbers
+- **MIME type**: Validação dupla
 
-O projeto está automaticamente ligado ao GitHub:
-- Cada commit no `main` dispara novo deploy
-- URL de produção atualizada automaticamente
-- Build e deploy em segundos
+### Estados da Interface
+
+1. **Upload**: Estado inicial com drag & drop
+2. **Preview**: Pré-visualização antes do envio
+3. **Loading**: Durante processamento n8n
+4. **Result**: Comparação das imagens
+5. **Error**: Tratamento de erros
 
 ## 📱 Compatibilidade
 
@@ -86,39 +219,34 @@ O projeto está automaticamente ligado ao GitHub:
 - Validação de tipos MIME reais (não apenas extensões)
 - Limitação de tamanho de ficheiro (10MB)
 - Sanitização de nomes de ficheiro
-- Content Security Policy implementado
+- Timeout de requests (60 segundos)
 
-## 📝 Desenvolvimento
+## 🚀 Deploy
 
-### Validações Implementadas
+### Vercel
 
-- **Tamanho**: Máximo 10MB
-- **Formatos**: JPEG, PNG, WEBP
-- **Tipo real**: Verificação de magic numbers
+✅ **Deploy ativo e configurado!**
 
-### Estados da Interface
+O projeto está automaticamente ligado ao GitHub:
+- Cada commit no `main` dispara novo deploy
+- URL de produção atualizada automaticamente
+- Build e deploy em segundos
 
-1. **Upload**: Estado inicial com drag & drop
-2. **Preview**: Pré-visualização antes do envio
-3. **Loading**: Durante processamento n8n
-4. **Result**: Comparação das imagens
-5. **Error**: Tratamento de erros
+### GitHub Pages (alternativo)
 
-## 🐛 Resolução de Problemas
+```bash
+# Apenas fazer commit do index.html
+git add index.html
+git commit -m "update"
+git push
+```
 
-### "Ficheiro muito grande"
-- Reduzir tamanho da imagem
-- Comprimir antes do upload
-- Máximo: 10MB
+## 🔗 Links Úteis
 
-### "Formato não suportado"
-- Usar JPG, PNG ou WEBP
-- Converter imagem se necessário
-
-### "Erro ao processar"
-- Verificar conexão internet
-- Tentar novamente
-- Contactar suporte se persistir
+- **Aplicação**: https://photo-editor-n8n-mim1qdk3m-carlos-projects-e332b665.vercel.app
+- **Repositório**: https://github.com/charliethebanker/photo-editor-n8n
+- **n8n Docs**: https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook/
+- **CORS Guide**: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
 
 ## 📄 Licença
 
@@ -134,6 +262,22 @@ MIT License - uso livre para projetos pessoais e comerciais.
 - Design inspirado em interfaces modernas de IA
 - Workflow n8n para processamento de imagens
 - Comunidade open-source
+
+---
+
+## 🆘 Suporte
+
+**Problemas comuns resolvidos:**
+- ✅ CORS configurado
+- ✅ FormData implementado
+- ✅ Logs de debug detalhados
+- ✅ Mensagens de erro claras
+
+**Precisas de ajuda?**
+1. Verificar logs do console (F12)
+2. Testar webhook com cURL/Postman
+3. Verificar executions no n8n
+4. Abrir issue no GitHub
 
 ---
 
