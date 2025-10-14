@@ -82,13 +82,15 @@
         }
 
         /* ==================== SECÇÕES ==================== */
+        /* IMPORTANTE: Todas as secções começam ocultas */
         section {
-            display: none;
-            animation: fadeIn 0.4s ease-in-out;
+            display: none !important;
         }
 
+        /* Apenas secções com .active ficam visíveis */
         section.active {
-            display: block;
+            display: flex !important;
+            animation: fadeIn 0.4s ease-in-out;
         }
 
         @keyframes fadeIn {
@@ -104,7 +106,6 @@
 
         /* ==================== UPLOAD SECTION ==================== */
         #upload-section {
-            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -211,10 +212,10 @@
 
         /* ==================== PREVIEW SECTION ==================== */
         #preview-section {
-            display: flex;
             flex-direction: column;
             align-items: center;
             gap: 2rem;
+            flex: 1;
         }
 
         .preview-container {
@@ -260,7 +261,6 @@
 
         /* ==================== LOADING SECTION ==================== */
         #loading-section {
-            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -288,9 +288,9 @@
 
         /* ==================== RESULT SECTION ==================== */
         #result-section {
-            display: flex;
             flex-direction: column;
             gap: 2rem;
+            flex: 1;
         }
 
         .comparison {
@@ -346,7 +346,6 @@
 
         /* ==================== ERROR SECTION ==================== */
         #error-section {
-            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -541,16 +540,21 @@
         // ==================== GESTÃO DE UI ====================
         const UI = {
             showSection(sectionName) {
-                // Ocultar todas as secções
+                console.log(`Mudando para secção: ${sectionName}`);
+                
+                // Ocultar TODAS as secções
                 document.querySelectorAll('section').forEach(section => {
                     section.classList.remove('active');
                 });
                 
-                // Mostrar secção específica
+                // Mostrar APENAS a secção específica
                 const section = document.getElementById(`${sectionName}-section`);
                 if (section) {
                     section.classList.add('active');
                     AppState.currentView = sectionName;
+                    console.log(`Secção ${sectionName} agora visível`);
+                } else {
+                    console.error(`Secção ${sectionName} não encontrada`);
                 }
             },
 
@@ -560,6 +564,8 @@
             },
 
             resetApp() {
+                console.log('A resetar aplicação');
+                
                 // Limpar estado
                 AppState.currentFile = null;
                 if (AppState.originalImageUrl) {
@@ -641,7 +647,6 @@
                 const img = document.getElementById('preview-original');
                 
                 img.onload = () => {
-                    // Imagem carregada com sucesso
                     console.log('Preview criado com sucesso');
                 };
                 
@@ -658,6 +663,8 @@
         const API = {
             async sendToWebhook(file) {
                 try {
+                    console.log('A enviar para webhook:', CONFIG.webhookUrl);
+                    
                     // Converter para base64
                     const base64 = await FileHandler.toBase64(file);
 
@@ -689,6 +696,7 @@
                     }
 
                     const result = await response.json();
+                    console.log('Resposta do webhook:', result);
 
                     // Validar resposta
                     if (!result.editedImage && !result.image) {
@@ -702,6 +710,8 @@
                     };
 
                 } catch (error) {
+                    console.error('Erro na comunicação com webhook:', error);
+                    
                     if (error.name === 'AbortError') {
                         throw new Error('Tempo limite excedido. A imagem pode ser muito grande.');
                     }
@@ -718,6 +728,7 @@
         // ==================== EVENT HANDLERS ====================
         const Events = {
             init() {
+                console.log('A inicializar eventos...');
                 this.initDropZone();
                 this.initFileInput();
                 this.initButtons();
@@ -759,6 +770,8 @@
             },
 
             async handleFileSelect(file) {
+                console.log('Ficheiro selecionado:', file?.name);
+                
                 // Validar ficheiro
                 const validation = FileHandler.validate(file);
                 if (!validation.valid) {
@@ -812,6 +825,8 @@
 
             async handleSend() {
                 try {
+                    console.log('A enviar imagem para processamento...');
+                    
                     // Mostrar loading
                     UI.showSection('loading');
 
@@ -825,6 +840,7 @@
                     document.getElementById('result-original').src = AppState.originalImageUrl;
                     document.getElementById('result-edited').src = result.editedImage;
 
+                    console.log('Imagem processada com sucesso');
                     UI.showSection('result');
 
                 } catch (error) {
@@ -838,6 +854,8 @@
                     UI.showError('Nenhuma imagem para download.');
                     return;
                 }
+
+                console.log('A fazer download da imagem...');
 
                 // Criar link de download
                 const link = document.createElement('a');
@@ -853,12 +871,15 @@
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
+                
+                console.log('Download iniciado');
             }
         };
 
         // ==================== INICIALIZAÇÃO ====================
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('O fotografo inicializado');
+            console.log('=== O fotografo inicializado ===');
+            console.log('Webhook URL:', CONFIG.webhookUrl);
             Events.init();
         });
     </script>
