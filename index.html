@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="O fotografo - Editor de fotografias automático via webhook n8n">
+    <meta name="author" content="charliethebanker">
+    <title>O fotografo</title>
+    
+    <style>
+        /* ==================== RESET E VARIÁVEIS ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #252525;
+            --bg-quaternary: #2f2f2f;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --text-tertiary: #808080;
+            --accent-color: #6366f1;
+            --accent-hover: #4f46e5;
+            --accent-light: #818cf8;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --border-color: #333333;
+            --border-radius: 12px;
+            --border-radius-sm: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ==================== BASE ==================== */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ==================== LAYOUT PRINCIPAL ==================== */
+        #app {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ==================== HEADER ==================== */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* ==================== SECÇÕES ==================== */
+        section {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ==================== UPLOAD SECTION ==================== */
+        #upload-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+
+        #drop-zone {
+            width: 100%;
+            max-width: 600px;
+            min-height: 400px;
+            border: 3px dashed var(--border-color);
+            border-radius: var(--border-radius);
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        #drop-zone:hover {
+            border-color: var(--accent-color);
+            background: var(--bg-tertiary);
+            transform: scale(1.02);
+        }
+
+        #drop-zone.drag-over {
+            border-color: var(--accent-light);
+            background: var(--bg-quaternary);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.6;
+        }
+
+        #drop-zone h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        #drop-zone p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-quaternary);
+            border-color: var(--text-secondary);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* ==================== PREVIEW SECTION ==================== */
+        #preview-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .preview-container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .preview-container h2 {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .image-preview {
+            width: 100%;
+            border-radius: var(--border-radius-sm);
+            overflow: hidden;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 500px;
+            width: auto;
+            height: auto;
+            display: block;
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* ==================== LOADING SECTION ==================== */
+        #loading-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            gap: 2rem;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--bg-tertiary);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #loading-section p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        /* ==================== RESULT SECTION ==================== */
+        #result-section {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .image-box {
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+        }
+
+        .image-box:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .image-box h3 {
+            margin-bottom: 1rem;
+            text-align: center;
+            color: var(--accent-light);
+            font-size: 1.25rem;
+        }
+
+        .image-box .image-wrapper {
+            width: 100%;
+            border-radius: var(--border-radius-sm);
+            overflow: hidden;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        .image-box img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .download-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* ==================== ERROR SECTION ==================== */
+        #error-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .error-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid var(--error-color);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            max-width: 600px;
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            color: var(--error-color);
+            margin-bottom: 1rem;
+        }
+
+        #error-text {
+            color: var(--text-primary);
+            font-size: 1.125rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* ==================== UTILITIES ==================== */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        /* ==================== RESPONSIVO ==================== */
+        @media (max-width: 768px) {
+            #app {
+                padding: 1rem;
+            }
+
+            header h1 {
+                font-size: 2rem;
+            }
+
+            header p {
+                font-size: 1rem;
+            }
+
+            #drop-zone {
+                min-height: 300px;
+                padding: 2rem 1rem;
+            }
+
+            .upload-icon {
+                font-size: 3rem;
+            }
+
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+
+            .actions,
+            .download-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.75rem;
+            }
+
+            #drop-zone h2 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- HEADER -->
+        <header>
+            <h1>O fotografo</h1>
+            <p>Editor de fotografias automático</p>
+        </header>
+
+        <!-- SECÇÃO 1: UPLOAD -->
+        <section id="upload-section" class="active">
+            <div id="drop-zone">
+                <div class="upload-icon">📸</div>
+                <h2>Arraste a sua foto aqui</h2>
+                <p>ou clique para selecionar um ficheiro</p>
+                <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">
+                    Escolher Ficheiro
+                </button>
+                <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-tertiary);">
+                    Máximo 10MB • JPG, PNG ou WEBP
+                </p>
+            </div>
+            <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp">
+        </section>
+
+        <!-- SECÇÃO 2: PREVIEW -->
+        <section id="preview-section">
+            <div class="preview-container">
+                <h2>Preview da Imagem</h2>
+                <div class="image-preview">
+                    <img id="preview-original" alt="Preview da imagem original">
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-secondary" id="btn-cancel">Cancelar</button>
+                <button class="btn btn-primary" id="btn-send">Enviar para Edição</button>
+            </div>
+        </section>
+
+        <!-- SECÇÃO 3: LOADING -->
+        <section id="loading-section">
+            <div class="spinner"></div>
+            <p>A processar imagem...</p>
+            <p style="font-size: 0.875rem; color: var(--text-tertiary);">Isto pode demorar alguns segundos</p>
+        </section>
+
+        <!-- SECÇÃO 4: RESULTADO -->
+        <section id="result-section">
+            <h2 class="text-center" style="font-size: 2rem; margin-bottom: 1rem;">Resultado</h2>
+            <div class="comparison">
+                <div class="image-box">
+                    <h3>Original</h3>
+                    <div class="image-wrapper">
+                        <img id="result-original" alt="Imagem original">
+                    </div>
+                </div>
+                <div class="image-box">
+                    <h3>Editada</h3>
+                    <div class="image-wrapper">
+                        <img id="result-edited" alt="Imagem editada">
+                    </div>
+                </div>
+            </div>
+            <div class="download-actions">
+                <button class="btn btn-success" id="btn-download">
+                    💾 Download da Imagem Editada
+                </button>
+                <button class="btn btn-secondary" id="btn-new">
+                    🔄 Nova Foto
+                </button>
+            </div>
+        </section>
+
+        <!-- SECÇÃO 5: ERRO -->
+        <section id="error-section">
+            <div class="error-box">
+                <div class="error-icon">⚠️</div>
+                <p id="error-text"></p>
+                <button class="btn btn-primary" id="btn-retry">Tentar Novamente</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // ==================== CONFIGURAÇÃO ====================
+        const CONFIG = {
+            webhookUrl: 'https://olancador.pt/webhook/fotografo',
+            maxFileSize: 10 * 1024 * 1024, // 10MB
+            acceptedFormats: ['image/jpeg', 'image/png', 'image/webp'],
+            acceptedMimeTypes: {
+                'image/jpeg': [0xFF, 0xD8, 0xFF],
+                'image/png': [0x89, 0x50, 0x4E, 0x47],
+                'image/webp': [0x52, 0x49, 0x46, 0x46]
+            },
+            requestTimeout: 60000 // 60 segundos
+        };
+
+        // ==================== ESTADO DA APLICAÇÃO ====================
+        const AppState = {
+            currentFile: null,
+            originalImageUrl: null,
+            editedImageUrl: null,
+            currentView: 'upload'
+        };
+
+        // ==================== GESTÃO DE UI ====================
+        const UI = {
+            showSection(sectionName) {
+                // Ocultar todas as secções
+                document.querySelectorAll('section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Mostrar secção específica
+                const section = document.getElementById(`${sectionName}-section`);
+                if (section) {
+                    section.classList.add('active');
+                    AppState.currentView = sectionName;
+                }
+            },
+
+            showError(message) {
+                document.getElementById('error-text').textContent = message;
+                this.showSection('error');
+            },
+
+            resetApp() {
+                // Limpar estado
+                AppState.currentFile = null;
+                if (AppState.originalImageUrl) {
+                    URL.revokeObjectURL(AppState.originalImageUrl);
+                }
+                AppState.originalImageUrl = null;
+                AppState.editedImageUrl = null;
+
+                // Limpar inputs
+                document.getElementById('file-input').value = '';
+                document.getElementById('preview-original').src = '';
+                document.getElementById('result-original').src = '';
+                document.getElementById('result-edited').src = '';
+
+                // Voltar ao upload
+                this.showSection('upload');
+            }
+        };
+
+        // ==================== GESTÃO DE FICHEIROS ====================
+        const FileHandler = {
+            validate(file) {
+                // Verificar se o ficheiro existe
+                if (!file) {
+                    return { valid: false, error: 'Nenhum ficheiro selecionado.' };
+                }
+
+                // Verificar tamanho
+                if (file.size > CONFIG.maxFileSize) {
+                    const maxMB = CONFIG.maxFileSize / 1024 / 1024;
+                    return { 
+                        valid: false, 
+                        error: `Ficheiro muito grande. Máximo: ${maxMB}MB` 
+                    };
+                }
+
+                // Verificar formato
+                if (!CONFIG.acceptedFormats.includes(file.type)) {
+                    return { 
+                        valid: false, 
+                        error: 'Formato não suportado. Use JPG, PNG ou WEBP.' 
+                    };
+                }
+
+                return { valid: true };
+            },
+
+            async validateRealMimeType(file) {
+                // Ler os primeiros bytes do ficheiro
+                try {
+                    const buffer = await file.slice(0, 4).arrayBuffer();
+                    const bytes = new Uint8Array(buffer);
+
+                    // Verificar magic numbers
+                    for (const [mimeType, signature] of Object.entries(CONFIG.acceptedMimeTypes)) {
+                        if (signature.every((byte, i) => bytes[i] === byte)) {
+                            return mimeType;
+                        }
+                    }
+
+                    return null;
+                } catch (error) {
+                    console.error('Erro ao validar MIME type:', error);
+                    return file.type;
+                }
+            },
+
+            async toBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            },
+
+            createPreview(file) {
+                const url = URL.createObjectURL(file);
+                const img = document.getElementById('preview-original');
+                
+                img.onload = () => {
+                    // Imagem carregada com sucesso
+                    console.log('Preview criado com sucesso');
+                };
+                
+                img.onerror = () => {
+                    UI.showError('Erro ao carregar preview da imagem.');
+                };
+
+                img.src = url;
+                AppState.originalImageUrl = url;
+            }
+        };
+
+        // ==================== API / WEBHOOK ====================
+        const API = {
+            async sendToWebhook(file) {
+                try {
+                    // Converter para base64
+                    const base64 = await FileHandler.toBase64(file);
+
+                    // Criar payload
+                    const payload = {
+                        image: base64,
+                        filename: file.name,
+                        mimeType: file.type,
+                        size: file.size
+                    };
+
+                    // Fazer request com timeout
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), CONFIG.requestTimeout);
+
+                    const response = await fetch(CONFIG.webhookUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload),
+                        signal: controller.signal
+                    });
+
+                    clearTimeout(timeoutId);
+
+                    if (!response.ok) {
+                        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                    }
+
+                    const result = await response.json();
+
+                    // Validar resposta
+                    if (!result.editedImage && !result.image) {
+                        throw new Error('Resposta inválida do servidor.');
+                    }
+
+                    return {
+                        success: true,
+                        editedImage: result.editedImage || result.image,
+                        originalImage: result.originalImage || base64
+                    };
+
+                } catch (error) {
+                    if (error.name === 'AbortError') {
+                        throw new Error('Tempo limite excedido. A imagem pode ser muito grande.');
+                    }
+
+                    if (error.message.includes('Failed to fetch')) {
+                        throw new Error('Erro de conexão. Verifique a sua internet.');
+                    }
+
+                    throw error;
+                }
+            }
+        };
+
+        // ==================== EVENT HANDLERS ====================
+        const Events = {
+            init() {
+                this.initDropZone();
+                this.initFileInput();
+                this.initButtons();
+            },
+
+            initDropZone() {
+                const dropZone = document.getElementById('drop-zone');
+
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('drag-over');
+                });
+
+                dropZone.addEventListener('dragleave', () => {
+                    dropZone.classList.remove('drag-over');
+                });
+
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('drag-over');
+
+                    const file = e.dataTransfer.files[0];
+                    this.handleFileSelect(file);
+                });
+
+                dropZone.addEventListener('click', (e) => {
+                    // Não abrir file picker se clicaram no botão
+                    if (e.target.tagName !== 'BUTTON') {
+                        document.getElementById('file-input').click();
+                    }
+                });
+            },
+
+            initFileInput() {
+                document.getElementById('file-input').addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    this.handleFileSelect(file);
+                });
+            },
+
+            async handleFileSelect(file) {
+                // Validar ficheiro
+                const validation = FileHandler.validate(file);
+                if (!validation.valid) {
+                    UI.showError(validation.error);
+                    return;
+                }
+
+                // Validar MIME type real
+                const realMimeType = await FileHandler.validateRealMimeType(file);
+                if (!realMimeType || !CONFIG.acceptedFormats.includes(realMimeType)) {
+                    UI.showError('Tipo de ficheiro inválido. Use apenas imagens JPG, PNG ou WEBP.');
+                    return;
+                }
+
+                // Guardar ficheiro
+                AppState.currentFile = file;
+
+                // Criar preview
+                FileHandler.createPreview(file);
+
+                // Mostrar secção de preview
+                UI.showSection('preview');
+            },
+
+            initButtons() {
+                // Botão enviar
+                document.getElementById('btn-send').addEventListener('click', () => {
+                    this.handleSend();
+                });
+
+                // Botão cancelar
+                document.getElementById('btn-cancel').addEventListener('click', () => {
+                    UI.resetApp();
+                });
+
+                // Botão download
+                document.getElementById('btn-download').addEventListener('click', () => {
+                    this.handleDownload();
+                });
+
+                // Botão nova foto
+                document.getElementById('btn-new').addEventListener('click', () => {
+                    UI.resetApp();
+                });
+
+                // Botão retry
+                document.getElementById('btn-retry').addEventListener('click', () => {
+                    UI.resetApp();
+                });
+            },
+
+            async handleSend() {
+                try {
+                    // Mostrar loading
+                    UI.showSection('loading');
+
+                    // Enviar para webhook
+                    const result = await API.sendToWebhook(AppState.currentFile);
+
+                    // Guardar imagem editada
+                    AppState.editedImageUrl = result.editedImage;
+
+                    // Mostrar resultado
+                    document.getElementById('result-original').src = AppState.originalImageUrl;
+                    document.getElementById('result-edited').src = result.editedImage;
+
+                    UI.showSection('result');
+
+                } catch (error) {
+                    console.error('Erro ao processar imagem:', error);
+                    UI.showError(error.message || 'Erro ao processar a imagem. Tente novamente.');
+                }
+            },
+
+            handleDownload() {
+                if (!AppState.editedImageUrl) {
+                    UI.showError('Nenhuma imagem para download.');
+                    return;
+                }
+
+                // Criar link de download
+                const link = document.createElement('a');
+                link.href = AppState.editedImageUrl;
+                
+                // Nome do ficheiro
+                const timestamp = new Date().getTime();
+                const originalName = AppState.currentFile?.name || 'imagem';
+                const extension = originalName.split('.').pop();
+                link.download = `editada_${timestamp}.${extension}`;
+                
+                // Trigger download
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        };
+
+        // ==================== INICIALIZAÇÃO ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('O fotografo inicializado');
+            Events.init();
+        });
+    </script>
+</body>
+</html>
