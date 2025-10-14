@@ -4,8 +4,13 @@
 
 Página web moderna para upload de fotografias, processamento automático através de workflow n8n e download da imagem editada.
 
+[![Deploy](https://img.shields.io/badge/deploy-live-brightgreen.svg)](https://photo-editor-n8n-mim1qdk3m-carlos-projects-e332b665.vercel.app)
 ![Status](https://img.shields.io/badge/status-active-success.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
+## 🌐 Aplicação Live
+
+**🔗 Aceder agora:** [https://photo-editor-n8n-mim1qdk3m-carlos-projects-e332b665.vercel.app](https://photo-editor-n8n-mim1qdk3m-carlos-projects-e332b665.vercel.app)
 
 ## 🌟 Funcionalidades
 
@@ -20,7 +25,7 @@ Página web moderna para upload de fotografias, processamento automático atrav�
 
 ## 🚀 Como Usar
 
-1. **Aceder à página**: [Em breve - URL do Vercel]
+1. **Aceder à página**: [https://photo-editor-n8n-mim1qdk3m-carlos-projects-e332b665.vercel.app](https://photo-editor-n8n-mim1qdk3m-carlos-projects-e332b665.vercel.app)
 2. **Fazer upload**: Arrastar foto ou clicar para selecionar
 3. **Enviar**: Clicar no botão "Enviar para Edição"
 4. **Aguardar**: O workflow n8n processa a imagem
@@ -62,11 +67,12 @@ https://olancador.pt/webhook/fotografo
 
 ### Deploy no Vercel
 
-1. Importar repositório do GitHub
-2. Configurar projeto (deteção automática)
-3. Deploy! 🚀
+✅ **Deploy ativo e configurado!**
 
-O auto-deploy está ativo - cada commit no `main` dispara novo deploy.
+O projeto está automaticamente ligado ao GitHub:
+- Cada commit no `main` dispara novo deploy
+- URL de produção atualizada automaticamente
+- Build e deploy em segundos
 
 ## 📱 Compatibilidade
 
