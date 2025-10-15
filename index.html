@@ -524,7 +524,7 @@
                 'image/png': [0x89, 0x50, 0x4E, 0x47],
                 'image/webp': [0x52, 0x49, 0x46, 0x46]
             },
-            requestTimeout: 60000, // 60 segundos
+            requestTimeout: 120000, // 120 segundos (aumentado de 60)
             useFormData: true // Usar FormData em vez de JSON
         };
 
@@ -570,9 +570,17 @@
                 AppState.editedImageUrl = null;
 
                 document.getElementById('file-input').value = '';
-                document.getElementById('preview-original').src = '';
-                document.getElementById('result-original').src = '';
-                document.getElementById('result-edited').src = '';
+                
+                // FIX: Limpar event handlers antes de resetar as imagens
+                const images = ['preview-original', 'result-original', 'result-edited'];
+                images.forEach(id => {
+                    const img = document.getElementById(id);
+                    if (img) {
+                        img.onload = null;
+                        img.onerror = null;
+                        img.removeAttribute('src');
+                    }
+                });
 
                 this.showSection('upload');
             }
@@ -633,6 +641,10 @@
             createPreview(file) {
                 const url = URL.createObjectURL(file);
                 const img = document.getElementById('preview-original');
+                
+                // FIX: Limpar handlers anteriores antes de criar novos
+                img.onload = null;
+                img.onerror = null;
                 
                 img.onload = () => {
                     console.log('✅ Preview criado com sucesso');
@@ -895,6 +907,7 @@
             console.log('🌐 Webhook URL:', CONFIG.webhookUrl);
             console.log('📦 Modo de envio:', CONFIG.useFormData ? 'FormData' : 'JSON/base64');
             console.log('📏 Tamanho máximo:', (CONFIG.maxFileSize / 1024 / 1024), 'MB');
+            console.log('⏱️ Timeout:', (CONFIG.requestTimeout / 1000), 'segundos');
             console.log('═══════════════════════════════════════');
             Events.init();
         });
