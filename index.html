@@ -6,7 +6,7 @@
     <meta name="description" content="O fotografo - Editor de fotografias automático via webhook n8n">
     <meta name="author" content="charliethebanker">
     <title>O fotografo</title>
-    
+
     <style>
         /* ==================== RESET E VARIÁVEIS ==================== */
         * {
@@ -36,13 +36,6 @@
             --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
             --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
             --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
-            
-            /* Glass effect variables */
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --glass-hover-bg: rgba(255, 255, 255, 0.1);
-            --glass-selected-bg: rgba(16, 185, 129, 0.2);
-            --glass-selected-border: #10b981;
         }
 
         /* ==================== BASE ==================== */
@@ -342,12 +335,12 @@
             display: block;
         }
 
-        /* ==================== LIQUID GLASS FORMAT PANEL ==================== */
+        /* ==================== FORMAT PANEL ==================== */
         .format-panel {
-            background: var(--glass-bg);
+            background: rgba(255, 255, 255, 0.02);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: var(--border-radius);
             padding: 2rem;
             margin: 2rem 0;
@@ -382,126 +375,199 @@
             margin-bottom: 1rem;
         }
 
-        /* Liquid Glass Button */
-        .liquid-button {
+        /* ==================== ANIMATED FORMAT BUTTON ==================== */
+        .format-button-wrapper {
             position: relative;
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius-sm);
-            padding: 1.25rem;
+            display: inline-block;
+        }
+
+        .format-button {
+            --padding: 4px;
+            --radius: 20px;
+            --transition: 0.4s;
+            --highlight: hsl(150, 100%, 45%);
+            --highlight-50: hsla(150, 100%, 45%, 0.5);
+            --highlight-30: hsla(150, 100%, 45%, 0.3);
+            --highlight-20: hsla(150, 100%, 45%, 0.2);
+            --highlight-80: hsla(150, 100%, 45%, 0.8);
+
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            transition: all 0.3s ease;
-            overflow: hidden;
-            min-height: 100px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            text-align: center;
-            font-size: 0.9rem;
+            user-select: none;
+            border-radius: var(--radius);
+            padding: 0.6rem 1rem;
+            background: var(--bg-secondary);
             color: var(--text-primary);
-            box-shadow: 0 0 6px rgba(0, 0, 0, 0.03),
-                        0 2px 6px rgba(0, 0, 0, 0.08),
-                        inset 3px 3px 0.5px -3px rgba(255, 255, 255, 0.09),
-                        inset -3px -3px 0.5px -3.5px rgba(255, 255, 255, 0.85),
-                        inset 1px 1px 1px -0.5px rgba(255, 255, 255, 0.6),
-                        inset -1px -1px 1px -0.5px rgba(255, 255, 255, 0.6),
-                        inset 0 0 6px 6px rgba(255, 255, 255, 0.12),
-                        inset 0 0 2px 2px rgba(255, 255, 255, 0.06),
-                        0 0 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow:
+                inset 0px 1px 1px rgba(255,255,255,0.2),
+                inset 0px 2px 2px rgba(255,255,255,0.15),
+                inset 0px 4px 4px rgba(255,255,255,0.1),
+                inset 0px 8px 8px rgba(255,255,255,0.05),
+                inset 0px 16px 16px rgba(255,255,255,0.05),
+                0 -1px 1px rgba(0,0,0,0.02),
+                0 -2px 2px rgba(0,0,0,0.03),
+                0 -4px 4px rgba(0,0,0,0.05),
+                0 -8px 8px rgba(0,0,0,0.06),
+                0 -16px 16px rgba(0,0,0,0.08);
+            transition: box-shadow var(--transition), border var(--transition), background-color var(--transition);
+            font-size: 0.85rem;
+            font-weight: 500;
+            width: 100%;
+            min-height: 48px;
         }
 
-        .liquid-button::before {
-            content: '';
+        .format-button::before {
+            content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(255, 255, 255, 0.1) 0%, 
-                rgba(255, 255, 255, 0.05) 50%, 
-                rgba(255, 255, 255, 0) 100%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            top: calc(0px - var(--padding));
+            left: calc(0px - var(--padding));
+            width: calc(100% + var(--padding) * 2);
+            height: calc(100% + var(--padding) * 2);
+            border-radius: calc(var(--radius) + var(--padding));
             pointer-events: none;
+            background-image: linear-gradient(0deg, #0004, #000a);
+            z-index: -1;
+            transition: box-shadow var(--transition), filter var(--transition);
+            box-shadow:
+                0 -8px 8px -6px #0000 inset,
+                0 -16px 16px -8px #00000000 inset,
+                1px 1px 1px #fff2,
+                2px 2px 2px #fff1,
+                -1px -1px 1px #0002,
+                -2px -2px 2px #0001;
         }
 
-        .liquid-button:hover {
-            background: var(--glass-hover-bg);
-            border-color: rgba(16, 185, 129, 0.5);
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.2);
-        }
-
-        .liquid-button:hover::before {
-            opacity: 1;
-        }
-
-        .liquid-button.selected {
-            background: var(--glass-selected-bg);
-            border: 2px solid var(--glass-selected-border);
-            transform: scale(1.02);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15),
-                        0 8px 25px rgba(16, 185, 129, 0.3);
-        }
-
-        .liquid-button.selected::after {
-            content: '✓';
+        .format-button::after {
+            content: "";
             position: absolute;
-            top: 8px;
-            right: 8px;
-            background: var(--success-color);
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            background-image: linear-gradient(0deg, #fff, var(--highlight), var(--highlight-50), 8%, transparent);
+            background-position: 0 0;
+            opacity: 0;
+            transition: opacity var(--transition), filter var(--transition);
+        }
+
+        .format-button-icon {
+            font-size: 1.25rem;
+            margin-right: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .format-button-text {
+            position: relative;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: bold;
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+            gap: 0.25rem;
+            flex-direction: column;
+            text-align: left;
+            flex: 1;
         }
 
-        .liquid-button.loading {
+        .format-button-platform {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #ffffff88;
+            transition: color var(--transition), text-shadow var(--transition);
+        }
+
+        .format-button-type {
+            font-size: 0.75rem;
+            color: #ffffff66;
+            transition: color var(--transition);
+        }
+
+        /* Hover state */
+        .format-button:hover {
+            border-color: hsla(150, 100%, 60%, 0.4);
+        }
+
+        .format-button:hover::before {
+            box-shadow:
+                0 -8px 8px -6px #fffa inset,
+                0 -16px 16px -8px var(--highlight-30) inset,
+                1px 1px 1px #fff2,
+                2px 2px 2px #fff1,
+                -1px -1px 1px #0002,
+                -2px -2px 2px #0001;
+        }
+
+        .format-button:hover::after {
+            opacity: 1;
+            -webkit-mask-image: linear-gradient(0deg, #fff, transparent);
+            mask-image: linear-gradient(0deg, #fff, transparent);
+        }
+
+        .format-button:hover .format-button-platform,
+        .format-button:hover .format-button-type {
+            color: #fff;
+            text-shadow: 0 0 3px #fff8;
+        }
+
+        /* Active state */
+        .format-button:active {
+            border-color: hsla(150, 100%, 60%, 0.7);
+            background-color: hsla(150, 50%, 20%, 0.5);
+        }
+
+        .format-button:active::before {
+            box-shadow:
+                0 -8px 12px -6px #fffa inset,
+                0 -16px 16px -8px var(--highlight-80) inset,
+                1px 1px 1px #fff4,
+                2px 2px 2px #fff2,
+                -1px -1px 1px #0002,
+                -2px -2px 2px #0001;
+        }
+
+        .format-button:active::after {
+            opacity: 1;
+            -webkit-mask-image: linear-gradient(0deg, #fff, transparent);
+            mask-image: linear-gradient(0deg, #fff, transparent);
+            filter: brightness(200%);
+        }
+
+        /* Selected state */
+        .format-button.selected {
+            border-color: var(--highlight);
+            background-color: hsla(150, 50%, 20%, 0.3);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+        }
+
+        .format-button.selected::before {
+            box-shadow:
+                0 -8px 12px -6px var(--highlight-50) inset,
+                0 -16px 16px -8px var(--highlight-30) inset,
+                1px 1px 1px #fff3,
+                2px 2px 2px #fff2,
+                -1px -1px 1px #0002,
+                -2px -2px 2px #0001;
+        }
+
+        .format-button.selected .format-button-platform {
+            color: var(--highlight);
+            text-shadow: 0 0 4px var(--highlight-50);
+        }
+
+        .format-button.selected .format-button-icon {
+            filter: drop-shadow(0 0 4px var(--highlight));
+        }
+
+        /* Loading state */
+        .format-button.loading {
             pointer-events: none;
             opacity: 0.6;
         }
 
-        .format-icon {
-            font-size: 2rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .format-info {
-            display: flex;
-            flex-direction: column;
-            gap: 0.125rem;
-        }
-
-        .format-platform {
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-
-        .format-type {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-
-        .format-ratio {
-            font-size: 0.8rem;
-            color: var(--text-tertiary);
-            font-weight: 500;
-        }
-
-        .format-dimensions {
-            font-size: 0.75rem;
-            color: var(--text-tertiary);
+        /* Disabled state */
+        .format-button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
 
         .format-feedback {
@@ -593,22 +659,13 @@
             }
 
             .format-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: 1fr;
                 gap: 0.75rem;
             }
 
-            .liquid-button {
-                padding: 1rem;
-                min-height: 90px;
-                font-size: 0.85rem;
-            }
-
-            .format-icon {
-                font-size: 1.75rem;
-            }
-
-            .format-dimensions {
-                display: none;
+            .format-button {
+                padding: 0.75rem 1rem;
+                font-size: 0.8rem;
             }
 
             .actions,
@@ -632,14 +689,6 @@
                 font-size: 1.25rem;
             }
 
-            .format-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .liquid-button {
-                min-height: 80px;
-            }
-
             .format-panel {
                 padding: 1.5rem;
             }
@@ -647,13 +696,9 @@
 
         /* Redução de movimento para acessibilidade */
         @media (prefers-reduced-motion: reduce) {
-            .liquid-button,
+            .format-button,
             .btn {
                 transition: none;
-            }
-            
-            .liquid-button:hover {
-                transform: none;
             }
         }
     </style>
@@ -706,7 +751,7 @@
         <!-- SECÇÃO 4: RESULTADO -->
         <section id="result-section">
             <h2 class="text-center" style="font-size: 2rem; margin-bottom: 1rem;">Resultado</h2>
-            
+
             <!-- Imagens lado a lado -->
             <div class="comparison">
                 <div class="image-box">
@@ -723,7 +768,7 @@
                 </div>
             </div>
 
-            <!-- NOVO: Painel de formatos para redes sociais -->
+            <!-- Painel de formatos para redes sociais -->
             <div class="format-panel">
                 <div class="format-header">
                     <h3 class="format-title">
@@ -734,79 +779,79 @@
                         Adapta automaticamente a tua imagem editada para o formato ideal
                     </p>
                 </div>
-                
+
                 <div class="format-grid">
                     <!-- Instagram Post -->
-                    <button 
-                        class="liquid-button" 
-                        data-format="instagram-post"
-                        data-ratio="4:5"
-                        data-width="1080"
-                        data-height="1350"
-                        aria-label="Optimizar para Instagram Post, formato 4:5"
-                    >
-                        <div class="format-icon">📷</div>
-                        <div class="format-info">
-                            <div class="format-platform">Instagram</div>
-                            <div class="format-type">Post</div>
-                            <div class="format-ratio">4:5</div>
-                            <div class="format-dimensions">1080x1350</div>
-                        </div>
-                    </button>
+                    <div class="format-button-wrapper">
+                        <button
+                            class="format-button"
+                            data-format="instagram-post"
+                            data-ratio="4:5"
+                            data-width="1080"
+                            data-height="1350"
+                            aria-label="Optimizar para Instagram Post, formato 4:5"
+                        >
+                            <span class="format-button-icon">📷</span>
+                            <div class="format-button-text">
+                                <span class="format-button-platform">Instagram Post</span>
+                                <span class="format-button-type">4:5 • 1080x1350</span>
+                            </div>
+                        </button>
+                    </div>
 
                     <!-- Instagram Reel -->
-                    <button 
-                        class="liquid-button" 
-                        data-format="instagram-reel"
-                        data-ratio="9:16"
-                        data-width="1080"
-                        data-height="1920"
-                        aria-label="Optimizar para Instagram Reel, formato 9:16"
-                    >
-                        <div class="format-icon">📹</div>
-                        <div class="format-info">
-                            <div class="format-platform">Instagram</div>
-                            <div class="format-type">Reel</div>
-                            <div class="format-ratio">9:16</div>
-                            <div class="format-dimensions">1080x1920</div>
-                        </div>
-                    </button>
+                    <div class="format-button-wrapper">
+                        <button
+                            class="format-button"
+                            data-format="instagram-reel"
+                            data-ratio="9:16"
+                            data-width="1080"
+                            data-height="1920"
+                            aria-label="Optimizar para Instagram Reel, formato 9:16"
+                        >
+                            <span class="format-button-icon">📹</span>
+                            <div class="format-button-text">
+                                <span class="format-button-platform">Instagram Reel</span>
+                                <span class="format-button-type">9:16 • 1080x1920</span>
+                            </div>
+                        </button>
+                    </div>
 
                     <!-- Instagram Story -->
-                    <button 
-                        class="liquid-button" 
-                        data-format="instagram-story"
-                        data-ratio="9:16"
-                        data-width="1080"
-                        data-height="1920"
-                        aria-label="Optimizar para Instagram Story, formato 9:16"
-                    >
-                        <div class="format-icon">📖</div>
-                        <div class="format-info">
-                            <div class="format-platform">Instagram</div>
-                            <div class="format-type">Story</div>
-                            <div class="format-ratio">9:16</div>
-                            <div class="format-dimensions">1080x1920</div>
-                        </div>
-                    </button>
+                    <div class="format-button-wrapper">
+                        <button
+                            class="format-button"
+                            data-format="instagram-story"
+                            data-ratio="9:16"
+                            data-width="1080"
+                            data-height="1920"
+                            aria-label="Optimizar para Instagram Story, formato 9:16"
+                        >
+                            <span class="format-button-icon">📖</span>
+                            <div class="format-button-text">
+                                <span class="format-button-platform">Instagram Story</span>
+                                <span class="format-button-type">9:16 • 1080x1920</span>
+                            </div>
+                        </button>
+                    </div>
 
                     <!-- TikTok -->
-                    <button 
-                        class="liquid-button" 
-                        data-format="tiktok"
-                        data-ratio="9:16"
-                        data-width="1080"
-                        data-height="1920"
-                        aria-label="Optimizar para TikTok, formato 9:16"
-                    >
-                        <div class="format-icon">🎵</div>
-                        <div class="format-info">
-                            <div class="format-platform">TikTok</div>
-                            <div class="format-type">Video</div>
-                            <div class="format-ratio">9:16</div>
-                            <div class="format-dimensions">1080x1920</div>
-                        </div>
-                    </button>
+                    <div class="format-button-wrapper">
+                        <button
+                            class="format-button"
+                            data-format="tiktok"
+                            data-ratio="9:16"
+                            data-width="1080"
+                            data-height="1920"
+                            aria-label="Optimizar para TikTok, formato 9:16"
+                        >
+                            <span class="format-button-icon">🎵</span>
+                            <div class="format-button-text">
+                                <span class="format-button-platform">TikTok Video</span>
+                                <span class="format-button-type">9:16 • 1080x1920</span>
+                            </div>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Feedback visual -->
@@ -835,39 +880,6 @@
             </div>
         </section>
     </div>
-
-    <!-- SVG Filter for Liquid Glass Effect -->
-    <svg style="position: absolute; width: 0; height: 0;">
-        <defs>
-            <filter
-                id="liquid-glass-filter"
-                x="0%"
-                y="0%"
-                width="100%"
-                height="100%"
-                colorInterpolationFilters="sRGB"
-            >
-                <feTurbulence
-                    type="fractalNoise"
-                    baseFrequency="0.05 0.05"
-                    numOctaves="1"
-                    seed="1"
-                    result="turbulence"
-                />
-                <feGaussianBlur in="turbulence" stdDeviation="2" result="blurredNoise" />
-                <feDisplacementMap
-                    in="SourceGraphic"
-                    in2="blurredNoise"
-                    scale="70"
-                    xChannelSelector="R"
-                    yChannelSelector="B"
-                    result="displaced"
-                />
-                <feGaussianBlur in="displaced" stdDeviation="4" result="finalBlur" />
-                <feComposite in="finalBlur" in2="finalBlur" operator="over" />
-            </filter>
-        </defs>
-    </svg>
 
     <script>
         // ==================== CONFIGURAÇÃO ====================
@@ -898,11 +910,11 @@
         const UI = {
             showSection(sectionName) {
                 console.log(`📍 Mudando para secção: ${sectionName}`);
-                
+
                 document.querySelectorAll('section').forEach(section => {
                     section.classList.remove('active');
                 });
-                
+
                 const section = document.getElementById(`${sectionName}-section`);
                 if (section) {
                     section.classList.add('active');
@@ -919,7 +931,7 @@
 
             resetApp() {
                 console.log('🔄 A resetar aplicação');
-                
+
                 AppState.currentFile = null;
                 if (AppState.originalImageUrl) {
                     URL.revokeObjectURL(AppState.originalImageUrl);
@@ -933,8 +945,7 @@
                 AppState.selectedFormat = null;
 
                 document.getElementById('file-input').value = '';
-                
-                // Limpar event handlers antes de resetar as imagens
+
                 const images = ['preview-original', 'result-original', 'result-edited'];
                 images.forEach(id => {
                     const img = document.getElementById(id);
@@ -945,12 +956,10 @@
                     }
                 });
 
-                // Reset format buttons
-                document.querySelectorAll('.liquid-button').forEach(btn => {
+                document.querySelectorAll('.format-button').forEach(btn => {
                     btn.classList.remove('selected');
                 });
 
-                // Reset download button text
                 document.getElementById('download-text').textContent = 'Download da Imagem Editada';
 
                 this.showSection('upload');
@@ -966,16 +975,16 @@
 
                 if (file.size > CONFIG.maxFileSize) {
                     const maxMB = CONFIG.maxFileSize / 1024 / 1024;
-                    return { 
-                        valid: false, 
-                        error: `Ficheiro muito grande. Máximo: ${maxMB}MB` 
+                    return {
+                        valid: false,
+                        error: `Ficheiro muito grande. Máximo: ${maxMB}MB`
                     };
                 }
 
                 if (!CONFIG.acceptedFormats.includes(file.type)) {
-                    return { 
-                        valid: false, 
-                        error: 'Formato não suportado. Use JPG, PNG ou WEBP.' 
+                    return {
+                        valid: false,
+                        error: 'Formato não suportado. Use JPG, PNG ou WEBP.'
                     };
                 }
 
@@ -1012,14 +1021,14 @@
             createPreview(file) {
                 const url = URL.createObjectURL(file);
                 const img = document.getElementById('preview-original');
-                
+
                 img.onload = null;
                 img.onerror = null;
-                
+
                 img.onload = () => {
                     console.log('✅ Preview criado com sucesso');
                 };
-                
+
                 img.onerror = () => {
                     UI.showError('Erro ao carregar preview da imagem.');
                 };
@@ -1035,32 +1044,28 @@
                 return new Promise((resolve, reject) => {
                     const img = new Image();
                     img.crossOrigin = 'anonymous';
-                    
+
                     img.onload = () => {
                         try {
                             const canvas = document.createElement('canvas');
                             const ctx = canvas.getContext('2d');
-                            
+
                             canvas.width = targetWidth;
                             canvas.height = targetHeight;
-                            
-                            // Calculate scaling to cover the entire canvas (object-fit: cover)
+
                             const scale = Math.max(
                                 targetWidth / img.width,
                                 targetHeight / img.height
                             );
-                            
+
                             const scaledWidth = img.width * scale;
                             const scaledHeight = img.height * scale;
-                            
-                            // Center the image
+
                             const x = (targetWidth - scaledWidth) / 2;
                             const y = (targetHeight - scaledHeight) / 2;
-                            
-                            // Draw image
+
                             ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-                            
-                            // Convert to blob
+
                             canvas.toBlob((blob) => {
                                 if (blob) {
                                     const url = URL.createObjectURL(blob);
@@ -1069,27 +1074,25 @@
                                     reject(new Error('Falha ao criar blob'));
                                 }
                             }, 'image/jpeg', 0.95);
-                            
+
                         } catch (error) {
                             reject(error);
                         }
                     };
-                    
+
                     img.onerror = () => {
                         reject(new Error('Falha ao carregar imagem'));
                     };
-                    
+
                     img.src = imageUrl;
                 });
             },
 
             updateSelectedButton(button) {
-                // Remove selection from all buttons
-                document.querySelectorAll('.liquid-button').forEach(btn => {
+                document.querySelectorAll('.format-button').forEach(btn => {
                     btn.classList.remove('selected');
                 });
-                
-                // Add selection to clicked button
+
                 button.classList.add('selected');
             },
 
@@ -1097,7 +1100,7 @@
                 const feedback = document.getElementById('format-feedback');
                 feedback.textContent = `✓ Formato aplicado: ${formatName} (${ratio})`;
                 feedback.classList.add('show');
-                
+
                 setTimeout(() => {
                     feedback.classList.remove('show');
                 }, 3000);
@@ -1119,9 +1122,9 @@
                 try {
                     console.log('📤 A enviar para webhook:', CONFIG.webhookUrl);
                     console.log('📁 Ficheiro:', file.name, '|', (file.size / 1024).toFixed(2), 'KB');
-                    
+
                     let response;
-                    
+
                     if (CONFIG.useFormData) {
                         console.log('📦 Usando FormData...');
                         const formData = new FormData();
@@ -1139,12 +1142,12 @@
                         });
 
                         clearTimeout(timeoutId);
-                        
+
                     } else {
                         console.log('📦 Usando JSON/base64...');
                         const base64 = await FileHandler.toBase64(file);
                         const base64Clean = base64.split(',')[1];
-                        
+
                         const payload = {
                             image: base64Clean,
                             filename: file.name,
@@ -1203,7 +1206,7 @@
 
                 } catch (error) {
                     console.error('❌ Erro na comunicação com webhook:', error);
-                    
+
                     if (error.name === 'AbortError') {
                         throw new Error('Tempo limite excedido. A imagem pode ser muito grande.');
                     }
@@ -1263,7 +1266,7 @@
 
             async handleFileSelect(file) {
                 console.log('📁 Ficheiro selecionado:', file?.name);
-                
+
                 const validation = FileHandler.validate(file);
                 if (!validation.valid) {
                     UI.showError(validation.error);
@@ -1304,44 +1307,40 @@
             },
 
             initFormatButtons() {
-                document.querySelectorAll('.liquid-button').forEach(button => {
+                document.querySelectorAll('.format-button').forEach(button => {
                     button.addEventListener('click', async () => {
                         if (button.classList.contains('loading')) return;
-                        
+
                         const format = button.dataset.format;
                         const ratio = button.dataset.ratio;
                         const width = parseInt(button.dataset.width);
                         const height = parseInt(button.dataset.height);
-                        const formatName = button.querySelector('.format-platform').textContent + ' ' + 
-                                          button.querySelector('.format-type').textContent;
-                        
+                        const formatName = button.querySelector('.format-button-platform').textContent;
+
                         try {
                             button.classList.add('loading');
-                            
+
                             console.log(`📐 A redimensionar para ${formatName} (${width}x${height})...`);
-                            
-                            // Liberar URL anterior se existir
+
                             if (AppState.resizedImageUrl) {
                                 URL.revokeObjectURL(AppState.resizedImageUrl);
                             }
-                            
-                            // Redimensionar imagem
+
                             const resizedUrl = await ImageResizer.resizeImage(
                                 AppState.editedImageUrl,
                                 width,
                                 height
                             );
-                            
+
                             AppState.resizedImageUrl = resizedUrl;
                             AppState.selectedFormat = { format, ratio, width, height, name: formatName };
-                            
-                            // Update UI
+
                             ImageResizer.updateSelectedButton(button);
                             ImageResizer.showFeedback(formatName, ratio);
                             ImageResizer.updateDownloadButton(formatName, ratio);
-                            
+
                             console.log(`✅ Imagem redimensionada para ${formatName}`);
-                            
+
                         } catch (error) {
                             console.error('❌ Erro ao redimensionar:', error);
                             UI.showError('Erro ao redimensionar a imagem. Tente novamente.');
@@ -1355,7 +1354,7 @@
             async handleSend() {
                 try {
                     console.log('🚀 A enviar imagem para processamento...');
-                    
+
                     UI.showSection('loading');
 
                     const result = await API.sendToWebhook(AppState.currentFile);
@@ -1375,9 +1374,8 @@
             },
 
             handleDownload() {
-                // Se há uma imagem redimensionada, usar essa; caso contrário usar a editada original
                 const imageUrl = AppState.resizedImageUrl || AppState.editedImageUrl;
-                
+
                 if (!imageUrl) {
                     UI.showError('Nenhuma imagem para download.');
                     return;
@@ -1387,24 +1385,23 @@
 
                 const link = document.createElement('a');
                 link.href = imageUrl;
-                
+
                 const timestamp = new Date().getTime();
                 const originalName = AppState.currentFile?.name || 'imagem';
                 const baseName = originalName.split('.')[0];
                 const extension = originalName.split('.').pop();
-                
-                // Nome do ficheiro com formato se aplicável
+
                 if (AppState.selectedFormat) {
                     const formatSlug = AppState.selectedFormat.format;
                     link.download = `${baseName}_${formatSlug}_${timestamp}.${extension}`;
                 } else {
                     link.download = `${baseName}_editada_${timestamp}.${extension}`;
                 }
-                
+
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                
+
                 console.log('✅ Download iniciado');
             }
         };
