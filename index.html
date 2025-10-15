@@ -196,7 +196,7 @@
         }
 
         .glass-button-shadow {
-            --shadow-cutoff-fix: 2em;
+            --shadow-cutoff-fix: 0.5em;
             position: absolute;
             width: calc(100% + var(--shadow-cutoff-fix));
             height: calc(100% + var(--shadow-cutoff-fix));
@@ -218,10 +218,10 @@
                 oklch(from var(--foreground) l c h / 20%),
                 oklch(from var(--foreground) l c h / 10%)
             );
-            width: calc(100% - var(--shadow-cutoff-fix) - 0.25em);
-            height: calc(100% - var(--shadow-cutoff-fix) - 0.25em);
-            top: calc(var(--shadow-cutoff-fix) - 0.5em);
-            left: calc(var(--shadow-cutoff-fix) - 0.875em);
+            width: calc(100% - var(--shadow-cutoff-fix));
+            height: calc(100% - var(--shadow-cutoff-fix));
+            top: calc(var(--shadow-cutoff-fix) / 2);
+            left: calc(var(--shadow-cutoff-fix) / 2);
             padding: 0.125em;
             box-sizing: border-box;
             mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -366,7 +366,7 @@
         }
 
         .glass-button-wrap:has(.glass-button:hover) .glass-button-shadow::after {
-            top: calc(var(--shadow-cutoff-fix) - 0.875em);
+            top: calc(var(--shadow-cutoff-fix) / 2 - 0.1em);
             opacity: 1;
         }
 
@@ -375,7 +375,7 @@
         }
 
         .glass-button-wrap:has(.glass-button:active) .glass-button-shadow::after {
-            top: calc(var(--shadow-cutoff-fix) - 0.5em);
+            top: calc(var(--shadow-cutoff-fix) / 2);
             opacity: 0.75;
         }
 
