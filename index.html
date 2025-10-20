@@ -1,0 +1,2450 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="O fotografo - Editor de fotografias automático via webhook n8n">
+    <meta name="author" content="charliethebanker">
+    <title>O fotografo</title>
+
+    <style>
+        /* ==================== RESET E VARIÁVEIS ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ==================== CSS PROPERTIES ANIMADAS ==================== */
+        @property --angle-1 {
+            syntax: "<angle>";
+            inherits: false;
+            initial-value: -75deg;
+        }
+
+        @property --angle-2 {
+            syntax: "<angle>";
+            inherits: false;
+            initial-value: -45deg;
+        }
+
+        :root {
+            /* Cores base */
+            --background: #0a0a0a;
+            --foreground: #ffffff;
+
+            /* Cores primárias */
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #252525;
+            --bg-quaternary: #2f2f2f;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --text-tertiary: #808080;
+            --accent-color: #6366f1;
+            --accent-hover: #4f46e5;
+            --accent-light: #818cf8;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --border-color: #333333;
+
+            /* Cores temáticas para SVG gradient */
+            --color-primary: #6366f1;
+            --color-secondary: #818cf8;
+            --color-chart-1: #10b981;
+            --color-chart-3: #f59e0b;
+            --color-chart-4: #ef4444;
+            --color-chart-5: #8b5cf6;
+            --color-accent: #06b6d4;
+            --color-destructive: #ef4444;
+
+            /* Cores das redes sociais */
+            --instagram-pink: #E1306C;
+            --instagram-purple: #833AB4;
+            --instagram-orange: #F77737;
+            --tiktok-cyan: #25F4EE;
+            --tiktok-pink: #FE2C55;
+            --tiktok-black: #000000;
+        }
+
+        /* ==================== ANIMAÇÕES ==================== */
+        @keyframes float1 {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(-10px, 10px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        @keyframes float2 {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(10px, -10px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px) scale(0.98);
+                filter: blur(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0px);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+                filter: blur(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0px);
+            }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes breathe {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.3));
+            }
+            50% {
+                filter: drop-shadow(0 0 40px rgba(99, 102, 241, 0.6));
+            }
+        }
+
+        @keyframes rotateGear {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0);
+                opacity: 0.6;
+            }
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        @keyframes buttonPress {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(0.95);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* ==================== BASE ==================== */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ==================== GRADIENT BACKGROUND ==================== */
+        .gradient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .gradient-bg svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* ==================== LAYOUT PRINCIPAL ==================== */
+        #app {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ==================== HEADER ==================== */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .header-icon-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .aperture-icon {
+            width: 70px;
+            height: 70px;
+            animation: glow 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.4));
+        }
+
+        .aperture-icon .blade {
+            transform-origin: center;
+            animation: apertureOpen 4s ease-in-out infinite;
+        }
+
+        @keyframes apertureOpen {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(0.85);
+                opacity: 0.9;
+            }
+        }
+
+        .aperture-icon .center-ring {
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light), var(--color-chart-1));
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+            position: relative;
+            display: inline-block;
+            animation: fadeInDown 1s ease-out 0.2s both;
+        }
+
+        header h1::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.3) 50%,
+                transparent 100%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            z-index: 1;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            animation: fadeInDown 1s ease-out 0.4s both;
+        }
+
+        header p::before {
+            content: '✨';
+            margin-right: 0.5rem;
+            display: inline-block;
+            animation: breathe 2s ease-in-out infinite;
+        }
+
+        header p::after {
+            content: '✨';
+            margin-left: 0.5rem;
+            display: inline-block;
+            animation: breathe 2s ease-in-out infinite;
+        }
+
+        /* ==================== SECÇÕES ==================== */
+        section {
+            display: none !important;
+        }
+
+        section.active {
+            display: flex !important;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* ==================== GLASS BUTTON COMPONENT ==================== */
+        .glass-button-wrap {
+            --anim-time: 400ms;
+            --anim-ease: cubic-bezier(0.25, 1, 0.5, 1);
+            --border-width: clamp(1px, 0.0625em, 4px);
+            position: relative;
+            z-index: 2;
+            transform-style: preserve-3d;
+            transition: transform var(--anim-time) var(--anim-ease);
+            display: inline-block;
+        }
+
+        .glass-button-wrap:has(.glass-button:active) {
+            transform: rotateX(25deg);
+        }
+
+        .glass-button-shadow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            filter: blur(clamp(2px, 0.125em, 12px));
+            transition: filter var(--anim-time) var(--anim-ease);
+            pointer-events: none;
+            z-index: 0;
+            border-radius: 9999px;
+        }
+
+        .glass-button-shadow::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 9999px;
+            background: linear-gradient(180deg,
+                oklch(from var(--foreground) l c h / 20%),
+                oklch(from var(--foreground) l c h / 10%)
+            );
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            padding: 0;
+            box-sizing: border-box;
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask-composite: exclude;
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            transition: all var(--anim-time) var(--anim-ease);
+            opacity: 1;
+        }
+
+        .glass-button {
+            all: unset;
+            -webkit-tap-highlight-color: transparent;
+            backdrop-filter: blur(clamp(1px, 0.125em, 4px));
+            transition: all var(--anim-time) var(--anim-ease);
+            background: linear-gradient(-75deg,
+                oklch(from var(--background) l c h / 5%),
+                oklch(from var(--background) l c h / 20%),
+                oklch(from var(--background) l c h / 5%)
+            );
+            box-shadow:
+                inset 0 0.125em 0.125em oklch(from var(--foreground) l c h / 5%),
+                inset 0 -0.125em 0.125em oklch(from var(--background) l c h / 50%),
+                0 0.25em 0.125em -0.125em oklch(from var(--foreground) l c h / 20%),
+                0 0 0.1em 0.25em inset oklch(from var(--background) l c h / 20%),
+                0 0 0 0 oklch(from var(--background) l c h);
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+            border-radius: 9999px;
+            padding: 0.875rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: oklch(from var(--foreground) l c h / 90%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            overflow: hidden;
+        }
+
+        /* Ripple effect container */
+        .glass-button .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(
+                circle,
+                rgba(255, 255, 255, 0.6) 0%,
+                rgba(255, 255, 255, 0.3) 50%,
+                transparent 100%
+            );
+            pointer-events: none;
+            transform: scale(0);
+            animation: ripple 0.6s ease-out;
+        }
+
+        .glass-button:active {
+            animation: buttonPress 0.3s ease-out;
+        }
+
+        .glass-button:hover {
+            transform: scale(0.975);
+            backdrop-filter: blur(0.01em);
+            box-shadow:
+                inset 0 0.125em 0.125em oklch(from var(--foreground) l c h / 5%),
+                inset 0 -0.125em 0.125em oklch(from var(--background) l c h / 50%),
+                0 0.15em 0.05em -0.1em oklch(from var(--foreground) l c h / 25%),
+                0 0 0.05em 0.1em inset oklch(from var(--background) l c h / 50%),
+                0 0 0 0 oklch(from var(--background) l c h);
+        }
+
+        .glass-button-text {
+            color: oklch(from var(--foreground) l c h / 90%);
+            text-shadow: 0em 0.25em 0.05em oklch(from var(--foreground) l c h / 10%);
+            transition: all var(--anim-time) var(--anim-ease);
+            position: relative;
+            display: block;
+            z-index: 10;
+        }
+
+        .glass-button:hover .glass-button-text {
+            text-shadow: 0.025em 0.025em 0.025em oklch(from var(--foreground) l c h / 12%);
+        }
+
+        .glass-button-text::after {
+            content: "";
+            display: block;
+            position: absolute;
+            width: calc(100% - var(--border-width));
+            height: calc(100% - var(--border-width));
+            top: calc(0% + var(--border-width) / 2);
+            left: calc(0% + var(--border-width) / 2);
+            box-sizing: border-box;
+            border-radius: 9999px;
+            overflow: clip;
+            background: linear-gradient(var(--angle-2),
+                transparent 0%,
+                oklch(from var(--background) l c h / 50%) 40% 50%,
+                transparent 55%
+            );
+            z-index: 3;
+            mix-blend-mode: screen;
+            pointer-events: none;
+            background-size: 200% 200%;
+            background-position: 0% 50%;
+            transition: background-position calc(var(--anim-time) * 1.25) var(--anim-ease),
+                        --angle-2 calc(var(--anim-time) * 1.25) var(--anim-ease);
+        }
+
+        .glass-button:hover .glass-button-text::after {
+            background-position: 25% 50%;
+        }
+
+        .glass-button:active .glass-button-text::after {
+            background-position: 50% 15%;
+            --angle-2: -15deg;
+        }
+
+        .glass-button::after {
+            content: "";
+            position: absolute;
+            z-index: 1;
+            inset: 0;
+            border-radius: 9999px;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background: conic-gradient(
+                from var(--angle-1) at 50% 50%,
+                oklch(from var(--foreground) l c h / 50%) 0%,
+                transparent 5% 40%,
+                oklch(from var(--foreground) l c h / 50%) 50%,
+                transparent 60% 95%,
+                oklch(from var(--foreground) l c h / 50%) 100%
+            ), linear-gradient(180deg,
+                oklch(from var(--background) l c h / 50%),
+                oklch(from var(--background) l c h / 50%)
+            );
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask-composite: exclude;
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            transition: all var(--anim-time) var(--anim-ease), --angle-1 500ms ease;
+            box-shadow: inset 0 0 0 calc(var(--border-width) / 2) oklch(from var(--background) l c h / 50%);
+            pointer-events: none;
+        }
+
+        .glass-button:hover::after {
+            --angle-1: -125deg;
+        }
+
+        .glass-button:active::after {
+            --angle-1: -75deg;
+        }
+
+        .glass-button-wrap:has(.glass-button:hover) .glass-button-shadow {
+            filter: blur(clamp(2px, 0.0625em, 6px));
+        }
+
+        .glass-button-wrap:has(.glass-button:hover) .glass-button-shadow::after {
+            top: -0.1em;
+            opacity: 1;
+        }
+
+        .glass-button-wrap:has(.glass-button:active) .glass-button-shadow {
+            filter: blur(clamp(2px, 0.125em, 12px));
+        }
+
+        .glass-button-wrap:has(.glass-button:active) .glass-button-shadow::after {
+            top: 0;
+            opacity: 0.75;
+        }
+
+        .glass-button-wrap:has(.glass-button:active) .glass-button-text {
+            text-shadow: 0.025em 0.25em 0.05em oklch(from var(--foreground) l c h / 12%);
+        }
+
+        .glass-button-wrap:has(.glass-button:active) .glass-button {
+            box-shadow:
+                inset 0 0.125em 0.125em oklch(from var(--foreground) l c h / 5%),
+                inset 0 -0.125em 0.125em oklch(from var(--background) l c h / 50%),
+                0 0.125em 0.125em -0.125em oklch(from var(--foreground) l c h / 20%),
+                0 0 0.1em 0.25em inset oklch(from var(--background) l c h / 20%),
+                0 0.225em 0.05em 0 oklch(from var(--foreground) l c h / 5%),
+                0 0.25em 0 0 oklch(from var(--background) l c h / 75%),
+                inset 0 0.25em 0.05em 0 oklch(from var(--foreground) l c h / 15%);
+        }
+
+        /* Variações de cor dos botões */
+        .glass-button.btn-primary {
+            background: linear-gradient(135deg,
+                oklch(from var(--accent-color) l c h / 85%),
+                oklch(from var(--accent-light) l c h / 95%),
+                oklch(from var(--color-chart-1) l c h / 80%)
+            );
+            background-size: 200% 200%;
+            animation: gradientShift 8s ease infinite;
+            box-shadow:
+                inset 0 0.125em 0.125em oklch(from var(--foreground) l c h / 5%),
+                inset 0 -0.125em 0.125em oklch(from var(--background) l c h / 50%),
+                0 0.25em 0.125em -0.125em oklch(from var(--accent-color) l c h / 30%),
+                0 0 0.1em 0.25em inset oklch(from var(--accent-color) l c h / 20%),
+                0 0 20px oklch(from var(--accent-color) l c h / 20%);
+        }
+
+        .glass-button.btn-primary:hover {
+            background: linear-gradient(135deg,
+                oklch(from var(--accent-color) l c h / 90%),
+                oklch(from var(--accent-light) l c h / 100%),
+                oklch(from var(--color-chart-1) l c h / 85%)
+            );
+            box-shadow:
+                inset 0 0.125em 0.125em oklch(from var(--foreground) l c h / 8%),
+                inset 0 -0.125em 0.125em oklch(from var(--background) l c h / 50%),
+                0 0.35em 0.15em -0.1em oklch(from var(--accent-color) l c h / 40%),
+                0 0 0.1em 0.3em inset oklch(from var(--accent-color) l c h / 30%),
+                0 0 30px oklch(from var(--accent-color) l c h / 30%);
+        }
+
+        @keyframes gradientShift {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .glass-button.btn-success {
+            background: linear-gradient(135deg,
+                oklch(from var(--success-color) l c h / 80%),
+                oklch(from var(--success-color) l c h / 95%),
+                oklch(from var(--success-color) l c h / 75%)
+            );
+            box-shadow:
+                inset 0 0.125em 0.125em oklch(from var(--foreground) l c h / 5%),
+                inset 0 -0.125em 0.125em oklch(from var(--background) l c h / 50%),
+                0 0.25em 0.125em -0.125em oklch(from var(--success-color) l c h / 25%),
+                0 0 0.1em 0.25em inset oklch(from var(--success-color) l c h / 15%),
+                0 0 15px oklch(from var(--success-color) l c h / 15%);
+        }
+
+        .glass-button.btn-secondary {
+            background: linear-gradient(135deg,
+                oklch(from var(--bg-tertiary) l c h / 60%),
+                oklch(from var(--bg-quaternary) l c h / 80%),
+                oklch(from var(--bg-tertiary) l c h / 55%)
+            );
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-button.btn-secondary:hover {
+            background: linear-gradient(135deg,
+                oklch(from var(--bg-tertiary) l c h / 70%),
+                oklch(from var(--bg-quaternary) l c h / 90%),
+                oklch(from var(--bg-tertiary) l c h / 65%)
+            );
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow:
+                inset 0 0.125em 0.125em oklch(from var(--foreground) l c h / 5%),
+                inset 0 -0.125em 0.125em oklch(from var(--background) l c h / 50%),
+                0 0.25em 0.15em -0.1em oklch(from var(--foreground) l c h / 20%),
+                0 0 0.1em 0.2em inset oklch(from var(--foreground) l c h / 10%),
+                0 0 15px rgba(255, 255, 255, 0.1);
+        }
+
+        /* ==================== BUTTON ICONS (SVG) ==================== */
+        .button-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            display: inline-flex;
+            vertical-align: middle;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-button:hover .button-icon {
+            filter: drop-shadow(0 4px 8px rgba(255, 255, 255, 0.3));
+            transform: scale(1.1);
+        }
+
+        /* ==================== SOCIAL MEDIA ICONS (SVG) ==================== */
+        .social-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            display: inline-flex;
+            vertical-align: middle;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-button:hover .social-icon {
+            filter: drop-shadow(0 6px 12px rgba(255, 255, 255, 0.4));
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .glass-button:active .social-icon {
+            transform: scale(1.05) rotate(-5deg);
+        }
+
+        /* Instagram icon specific */
+        .social-icon.instagram-icon {
+            filter: drop-shadow(0 2px 6px rgba(225, 48, 108, 0.4));
+        }
+
+        .glass-button:hover .social-icon.instagram-icon {
+            filter: drop-shadow(0 6px 16px rgba(225, 48, 108, 0.6));
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        /* TikTok icon specific */
+        .social-icon.tiktok-icon {
+            filter: drop-shadow(0 2px 6px rgba(37, 244, 238, 0.4));
+        }
+
+        .glass-button:hover .social-icon.tiktok-icon {
+            filter: drop-shadow(0 6px 16px rgba(37, 244, 238, 0.6));
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        /* ==================== UPLOAD SECTION ==================== */
+        #upload-section {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+
+        #drop-zone {
+            width: 100%;
+            max-width: 600px;
+            min-height: 400px;
+            border: 3px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            background: rgba(26, 26, 26, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow:
+                inset 0 1px 1px rgba(255, 255, 255, 0.05),
+                0 8px 32px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #drop-zone::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(
+                circle,
+                rgba(99, 102, 241, 0.1) 0%,
+                transparent 70%
+            );
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        #drop-zone:hover::before {
+            opacity: 1;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        #drop-zone:hover {
+            border-color: var(--accent-color);
+            background: rgba(26, 26, 26, 0.6);
+            transform: scale(1.02) translateY(-4px);
+            box-shadow:
+                inset 0 1px 1px rgba(255, 255, 255, 0.1),
+                0 12px 40px rgba(99, 102, 241, 0.2),
+                0 0 0 1px rgba(99, 102, 241, 0.1);
+        }
+
+        #drop-zone.drag-over {
+            border-color: var(--accent-light);
+            background: rgba(99, 102, 241, 0.15);
+            transform: scale(1.05);
+            box-shadow:
+                inset 0 1px 1px rgba(255, 255, 255, 0.15),
+                0 0 40px rgba(99, 102, 241, 0.4),
+                0 0 0 2px var(--accent-light);
+        }
+
+        #drop-zone.drag-over::before {
+            opacity: 1;
+        }
+
+        .upload-icon-wrapper {
+            position: relative;
+            margin-bottom: 1.5rem;
+            animation: breathe 3s ease-in-out infinite;
+        }
+
+        .upload-icon {
+            width: 80px;
+            height: 80px;
+            filter: drop-shadow(0 4px 12px rgba(99, 102, 241, 0.3));
+            transition: all 0.3s ease;
+        }
+
+        #drop-zone:hover .upload-icon {
+            filter: drop-shadow(0 8px 24px rgba(99, 102, 241, 0.5));
+            transform: translateY(-5px);
+        }
+
+        #drop-zone.drag-over .upload-icon {
+            filter: drop-shadow(0 12px 32px rgba(99, 102, 241, 0.7));
+            transform: scale(1.1) translateY(-8px);
+            animation: breathe 1s ease-in-out infinite;
+        }
+
+        .upload-icon .cloud-part {
+            transition: transform 0.3s ease;
+        }
+
+        #drop-zone:hover .upload-icon .cloud-part {
+            transform: translateY(-3px);
+        }
+
+        .upload-icon .arrow-part {
+            transition: transform 0.3s ease;
+        }
+
+        #drop-zone:hover .upload-icon .arrow-part {
+            transform: translateY(3px);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        #drop-zone.drag-over .upload-icon .arrow-part {
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        #drop-zone h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        #drop-zone p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* ==================== PREVIEW SECTION ==================== */
+        #preview-section {
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            flex: 1;
+        }
+
+        .preview-container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(26, 26, 26, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow:
+                inset 0 1px 1px rgba(255, 255, 255, 0.05),
+                0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .preview-container:hover {
+            border-color: rgba(99, 102, 241, 0.2);
+            box-shadow:
+                inset 0 1px 1px rgba(255, 255, 255, 0.08),
+                0 12px 40px rgba(99, 102, 241, 0.15);
+        }
+
+        .preview-container h2 {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: var(--text-primary);
+            font-weight: 600;
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .preview-container h2::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-light));
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .preview-container:hover h2::after {
+            width: 100px;
+        }
+
+        .image-preview {
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            background: rgba(37, 37, 37, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 500px;
+            width: auto;
+            height: auto;
+            display: block;
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* ==================== LOADING SECTION ==================== */
+        #loading-section {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            gap: 2rem;
+        }
+
+        .spinner-wrapper {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spinner {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+        }
+
+        .spinner-ring-1 {
+            border: 4px solid transparent;
+            border-top-color: var(--accent-color);
+            border-right-color: var(--accent-color);
+            animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .spinner-ring-2 {
+            border: 4px solid transparent;
+            border-bottom-color: var(--accent-light);
+            border-left-color: var(--accent-light);
+            animation: spin 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite reverse;
+            box-shadow: 0 0 25px rgba(129, 140, 248, 0.3);
+        }
+
+        .spinner-ring-3 {
+            width: 60px;
+            height: 60px;
+            border: 3px solid transparent;
+            border-top-color: var(--color-chart-1);
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .spinner-core {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
+        }
+
+        #loading-section p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            animation: pulse 2s ease-in-out infinite;
+            font-weight: 500;
+        }
+
+        #loading-section p:first-of-type {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light), var(--color-chart-1));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* ==================== RESULT SECTION ==================== */
+        #result-section {
+            flex-direction: column;
+            gap: 2rem;
+            flex: 1;
+        }
+
+        #result-section > h2 {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        #result-section > h2::before {
+            content: '✨';
+            margin-right: 1rem;
+            display: inline-block;
+            animation: breathe 2s ease-in-out infinite;
+        }
+
+        #result-section > h2::after {
+            content: '✨';
+            margin-left: 1rem;
+            display: inline-block;
+            animation: breathe 2s ease-in-out infinite 1s;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .image-box {
+            background: rgba(26, 26, 26, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow:
+                inset 0 1px 1px rgba(255, 255, 255, 0.05),
+                0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(99, 102, 241, 0.1),
+                transparent
+            );
+            transition: left 0.5s ease;
+        }
+
+        .image-box:hover::before {
+            left: 100%;
+        }
+
+        .image-box:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow:
+                inset 0 1px 1px rgba(255, 255, 255, 0.08),
+                0 16px 48px rgba(99, 102, 241, 0.2),
+                0 0 0 1px rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .image-box h3 {
+            margin-bottom: 1rem;
+            text-align: center;
+            background: linear-gradient(135deg, var(--accent-light), var(--color-chart-1));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.25rem;
+        }
+
+        .image-box .image-wrapper {
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            background: rgba(37, 37, 37, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .image-box img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* ==================== FORMAT PANEL ==================== */
+        .format-panel {
+            background: rgba(26, 26, 26, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow:
+                inset 0 1px 1px rgba(255, 255, 255, 0.05),
+                0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .format-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .format-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .format-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .format-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            justify-items: center;
+        }
+
+        .format-grid .glass-button-wrap {
+            animation: fadeIn 0.6s ease-out both;
+        }
+
+        .format-grid .glass-button-wrap:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .format-grid .glass-button-wrap:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .format-grid .glass-button-wrap:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .format-grid .glass-button-wrap:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        /* Selected state for format buttons */
+        .glass-button.format-button.selected {
+            box-shadow:
+                inset 0 0.125em 0.125em oklch(from var(--foreground) l c h / 15%),
+                inset 0 -0.125em 0.125em oklch(from var(--background) l c h / 50%),
+                0 0 0 2px var(--success-color),
+                0 0 20px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Loading state */
+        .glass-button.loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .format-feedback {
+            min-height: 30px;
+            text-align: center;
+            color: var(--success-color);
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .format-feedback.show {
+            opacity: 1;
+        }
+
+        .download-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* ==================== ERROR SECTION ==================== */
+        #error-section {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .error-box {
+            background: rgba(239, 68, 68, 0.1);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 2px solid var(--error-color);
+            border-radius: 24px;
+            padding: 2rem;
+            max-width: 600px;
+            box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2);
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            color: var(--error-color);
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 4px 12px rgba(239, 68, 68, 0.4));
+        }
+
+        #error-text {
+            color: var(--text-primary);
+            font-size: 1.125rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* ==================== UTILITIES ==================== */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        /* ==================== RESPONSIVO ==================== */
+        @media (max-width: 768px) {
+            #app {
+                padding: 1rem;
+            }
+
+            header h1 {
+                font-size: 2rem;
+            }
+
+            header p {
+                font-size: 1rem;
+            }
+
+            #drop-zone {
+                min-height: 300px;
+                padding: 2rem 1rem;
+            }
+
+            .upload-icon {
+                font-size: 3rem;
+            }
+
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+
+            .format-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .actions,
+            .download-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .glass-button-wrap {
+                width: 100%;
+            }
+
+            .glass-button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.75rem;
+            }
+
+            #drop-zone h2 {
+                font-size: 1.25rem;
+            }
+
+            .format-panel {
+                padding: 1.5rem;
+            }
+
+            .social-icon {
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        /* Redução de movimento para acessibilidade */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .gradient-bg svg g {
+                animation: none !important;
+            }
+        }
+
+        /* Suporte touch em mobile */
+        @media (hover: none) and (pointer: coarse) {
+            .glass-button::after,
+            .glass-button:hover::after,
+            .glass-button:active::after {
+                --angle-1: -75deg;
+            }
+
+            .glass-button .glass-button-text::after,
+            .glass-button:active .glass-button-text::after {
+                --angle-2: -45deg;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Gradient Background -->
+    <div class="gradient-bg">
+        <svg width="100%" height="100%" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+                <!-- Enhanced gradients with more vibrant colors -->
+                <linearGradient id="rev_grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color: #6366f1; stop-opacity: 0.9">
+                        <animate attributeName="stop-color" values="#6366f1;#818cf8;#6366f1" dur="10s" repeatCount="indefinite"/>
+                    </stop>
+                    <stop offset="100%" style="stop-color: #f59e0b; stop-opacity: 0.7">
+                        <animate attributeName="stop-color" values="#f59e0b;#fbbf24;#f59e0b" dur="12s" repeatCount="indefinite"/>
+                    </stop>
+                </linearGradient>
+                <linearGradient id="rev_grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color: #ef4444; stop-opacity: 0.8">
+                        <animate attributeName="stop-color" values="#ef4444;#f87171;#ef4444" dur="14s" repeatCount="indefinite"/>
+                    </stop>
+                    <stop offset="50%" style="stop-color: #818cf8; stop-opacity: 0.7">
+                        <animate attributeName="stop-color" values="#818cf8;#a5b4fc;#818cf8" dur="11s" repeatCount="indefinite"/>
+                    </stop>
+                    <stop offset="100%" style="stop-color: #10b981; stop-opacity: 0.6">
+                        <animate attributeName="stop-color" values="#10b981;#34d399;#10b981" dur="13s" repeatCount="indefinite"/>
+                    </stop>
+                </linearGradient>
+                <radialGradient id="rev_grad3" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" style="stop-color: #8b5cf6; stop-opacity: 0.8">
+                        <animate attributeName="stop-color" values="#8b5cf6;#a78bfa;#8b5cf6" dur="15s" repeatCount="indefinite"/>
+                    </stop>
+                    <stop offset="100%" style="stop-color: #ec4899; stop-opacity: 0.5">
+                        <animate attributeName="stop-color" values="#ec4899;#f472b6;#ec4899" dur="16s" repeatCount="indefinite"/>
+                    </stop>
+                </radialGradient>
+                <radialGradient id="rev_grad4" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" style="stop-color: #06b6d4; stop-opacity: 0.7">
+                        <animate attributeName="stop-color" values="#06b6d4;#22d3ee;#06b6d4" dur="18s" repeatCount="indefinite"/>
+                    </stop>
+                    <stop offset="100%" style="stop-color: #3b82f6; stop-opacity: 0.5">
+                        <animate attributeName="stop-color" values="#3b82f6;#60a5fa;#3b82f6" dur="17s" repeatCount="indefinite"/>
+                    </stop>
+                </radialGradient>
+                <filter id="rev_blur1" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="40"/>
+                </filter>
+                <filter id="rev_blur2" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="30"/>
+                </filter>
+                <filter id="rev_blur3" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="50"/>
+                </filter>
+                <filter id="rev_blur4" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="35"/>
+                </filter>
+            </defs>
+            <!-- Layer 1 - Slow floating shapes -->
+            <g style="animation: float1 25s ease-in-out infinite;">
+                <ellipse cx="200" cy="500" rx="280" ry="200" fill="url(#rev_grad1)" filter="url(#rev_blur1)" transform="rotate(-30 200 500)">
+                    <animateTransform attributeName="transform" type="rotate" values="-30 200 500;-20 200 500;-30 200 500" dur="20s" repeatCount="indefinite"/>
+                </ellipse>
+                <rect x="500" y="100" width="320" height="280" rx="90" fill="url(#rev_grad2)" filter="url(#rev_blur2)" transform="rotate(15 650 225)">
+                    <animateTransform attributeName="transform" type="rotate" values="15 650 225;25 650 225;15 650 225" dur="22s" repeatCount="indefinite"/>
+                </rect>
+            </g>
+            <!-- Layer 2 - Medium speed floating shapes -->
+            <g style="animation: float2 30s ease-in-out infinite;">
+                <circle cx="650" cy="450" r="170" fill="url(#rev_grad3)" filter="url(#rev_blur3)" opacity="0.7">
+                    <animate attributeName="r" values="170;190;170" dur="18s" repeatCount="indefinite"/>
+                </circle>
+                <ellipse cx="50" cy="150" rx="200" ry="140" fill="url(#rev_grad4)" filter="url(#rev_blur2)" opacity="0.8">
+                    <animate attributeName="rx" values="200;220;200" dur="16s" repeatCount="indefinite"/>
+                    <animate attributeName="ry" values="140;160;140" dur="17s" repeatCount="indefinite"/>
+                </ellipse>
+            </g>
+            <!-- Layer 3 - Additional orbs for depth -->
+            <g style="animation: float1 35s ease-in-out infinite reverse;">
+                <circle cx="400" cy="300" r="120" fill="url(#rev_grad1)" filter="url(#rev_blur4)" opacity="0.6">
+                    <animate attributeName="cx" values="400;420;400" dur="24s" repeatCount="indefinite"/>
+                    <animate attributeName="cy" values="300;280;300" dur="26s" repeatCount="indefinite"/>
+                </circle>
+                <ellipse cx="700" cy="100" rx="150" ry="100" fill="url(#rev_grad3)" filter="url(#rev_blur3)" opacity="0.5">
+                    <animateTransform attributeName="transform" type="rotate" values="0 700 100;360 700 100" dur="40s" repeatCount="indefinite"/>
+                </ellipse>
+            </g>
+        </svg>
+    </div>
+
+    <div id="app">
+        <!-- HEADER -->
+        <header>
+            <div class="header-icon-wrapper">
+                <svg class="aperture-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <!-- Gradients -->
+                        <linearGradient id="apertureGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#818cf8;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#a5b4fc;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="apertureGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#34d399;stop-opacity:1" />
+                        </linearGradient>
+                        <radialGradient id="apertureCenterGlow">
+                            <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.8" />
+                            <stop offset="50%" style="stop-color:#a5b4fc;stop-opacity:0.4" />
+                            <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0.1" />
+                        </radialGradient>
+                    </defs>
+
+                    <!-- Outer ring -->
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="url(#apertureGradient1)" stroke-width="2.5" opacity="0.6"/>
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="url(#apertureGradient1)" stroke-width="1.5" opacity="0.8"/>
+
+                    <!-- Aperture blades (8 blades forming hexagon-like shape) -->
+                    <g class="blade">
+                        <!-- Blade 1 -->
+                        <path d="M 50 15 L 65 35 L 50 35 Z" fill="url(#apertureGradient1)" opacity="0.9"/>
+                        <!-- Blade 2 -->
+                        <path d="M 65 35 L 75 50 L 65 50 Z" fill="url(#apertureGradient1)" opacity="0.85"/>
+                        <!-- Blade 3 -->
+                        <path d="M 75 50 L 65 65 L 65 50 Z" fill="url(#apertureGradient1)" opacity="0.9"/>
+                        <!-- Blade 4 -->
+                        <path d="M 65 65 L 50 85 L 50 65 Z" fill="url(#apertureGradient1)" opacity="0.85"/>
+                        <!-- Blade 5 -->
+                        <path d="M 50 85 L 35 65 L 50 65 Z" fill="url(#apertureGradient1)" opacity="0.9"/>
+                        <!-- Blade 6 -->
+                        <path d="M 35 65 L 25 50 L 35 50 Z" fill="url(#apertureGradient1)" opacity="0.85"/>
+                        <!-- Blade 7 -->
+                        <path d="M 25 50 L 35 35 L 35 50 Z" fill="url(#apertureGradient1)" opacity="0.9"/>
+                        <!-- Blade 8 -->
+                        <path d="M 35 35 L 50 15 L 50 35 Z" fill="url(#apertureGradient1)" opacity="0.85"/>
+                    </g>
+
+                    <!-- Center opening with glow -->
+                    <circle cx="50" cy="50" r="18" fill="url(#apertureCenterGlow)" class="center-ring"/>
+                    <circle cx="50" cy="50" r="15" fill="none" stroke="url(#apertureGradient2)" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="8" fill="url(#apertureGradient2)" opacity="0.6"/>
+
+                    <!-- Center dot -->
+                    <circle cx="50" cy="50" r="3" fill="#ffffff" opacity="0.9">
+                        <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
+                    </circle>
+
+                    <!-- Decorative corner marks -->
+                    <path d="M 10 10 L 15 10 L 15 15" stroke="url(#apertureGradient2)" stroke-width="2" fill="none" opacity="0.5"/>
+                    <path d="M 90 10 L 85 10 L 85 15" stroke="url(#apertureGradient2)" stroke-width="2" fill="none" opacity="0.5"/>
+                    <path d="M 10 90 L 15 90 L 15 85" stroke="url(#apertureGradient2)" stroke-width="2" fill="none" opacity="0.5"/>
+                    <path d="M 90 90 L 85 90 L 85 85" stroke="url(#apertureGradient2)" stroke-width="2" fill="none" opacity="0.5"/>
+                </svg>
+            </div>
+            <h1>O fotografo</h1>
+            <p>Editor de fotografias automático</p>
+        </header>
+
+        <!-- SECÇÃO 1: UPLOAD -->
+        <section id="upload-section" class="active">
+            <div id="drop-zone">
+                <div class="upload-icon-wrapper">
+                    <svg class="upload-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <!-- Gradients -->
+                            <linearGradient id="frameGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#818cf8;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="imageGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#a5b4fc;stop-opacity:0.3" />
+                                <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0.5" />
+                            </linearGradient>
+                            <linearGradient id="plusGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#34d399;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Main photo frame (polaroid style) -->
+                        <g class="cloud-part">
+                            <rect x="15" y="15" width="70" height="70" rx="4" fill="url(#frameGradient)" opacity="0.2"/>
+                            <rect x="15" y="15" width="70" height="70" rx="4" fill="none" stroke="url(#frameGradient)" stroke-width="2.5"/>
+
+                            <!-- Image placeholder area -->
+                            <rect x="20" y="20" width="60" height="50" rx="2" fill="url(#imageGradient)"/>
+
+                            <!-- Mountain/landscape icon inside -->
+                            <path d="M 30 60 L 45 45 L 55 55 L 70 40 L 75 45 L 75 65 L 25 65 Z"
+                                  fill="url(#frameGradient)" opacity="0.5"/>
+
+                            <!-- Sun/circle in corner -->
+                            <circle cx="68" cy="28" r="5" fill="url(#plusGradient)" opacity="0.6"/>
+
+                            <!-- Corner markers (focus frame) -->
+                            <path d="M 18 18 L 25 18 M 18 18 L 18 25" stroke="url(#plusGradient)" stroke-width="2" opacity="0.8"/>
+                            <path d="M 82 18 L 75 18 M 82 18 L 82 25" stroke="url(#plusGradient)" stroke-width="2" opacity="0.8"/>
+                            <path d="M 18 82 L 25 82 M 18 82 L 18 75" stroke="url(#plusGradient)" stroke-width="2" opacity="0.8"/>
+                            <path d="M 82 82 L 75 82 M 82 82 L 82 75" stroke="url(#plusGradient)" stroke-width="2" opacity="0.8"/>
+                        </g>
+
+                        <!-- Upload indicator (plus sign in circle) -->
+                        <g class="arrow-part">
+                            <circle cx="75" cy="75" r="15" fill="url(#plusGradient)" opacity="0.9"/>
+                            <circle cx="75" cy="75" r="15" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.5"/>
+
+                            <!-- Plus icon -->
+                            <line x1="75" y1="68" x2="75" y2="82" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+                            <line x1="68" y1="75" x2="82" y2="75" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+                        </g>
+
+                        <!-- Sparkles around frame -->
+                        <circle cx="12" cy="30" r="2" fill="#FCD34D" opacity="0.8">
+                            <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="88" cy="50" r="2.5" fill="#A5B4FC" opacity="0.8">
+                            <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                        </circle>
+                        <circle cx="30" cy="10" r="1.5" fill="#10B981" opacity="0.8">
+                            <animate attributeName="opacity" values="0.3;1;0.3" dur="1.8s" repeatCount="indefinite" begin="0.3s"/>
+                        </circle>
+                        <circle cx="90" cy="20" r="1.8" fill="#818cf8" opacity="0.8">
+                            <animate attributeName="opacity" values="0.3;1;0.3" dur="2.2s" repeatCount="indefinite" begin="0.7s"/>
+                        </circle>
+                    </svg>
+                </div>
+                <h2>Arraste a sua foto aqui</h2>
+                <p>ou clique para selecionar um ficheiro</p>
+                <div class="glass-button-wrap">
+                    <button class="glass-button btn-primary" onclick="document.getElementById('file-input').click()">
+                        <span class="glass-button-text">
+                            <svg class="button-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Gallery/Images icon -->
+                                <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                                <rect x="6" y="11" width="12" height="9" rx="1" fill="currentColor" opacity="0.3"/>
+                                <path d="M 6 20 L 10 15 L 13 18 L 18 12 L 18 20 Z" fill="currentColor" opacity="0.6"/>
+                                <circle cx="15" cy="8" r="1.5" fill="currentColor"/>
+                            </svg>
+                            Escolher Ficheiro
+                        </span>
+                    </button>
+                    <div class="glass-button-shadow"></div>
+                </div>
+                <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-tertiary);">
+                    Máximo 10MB • JPG, PNG ou WEBP
+                </p>
+            </div>
+            <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp">
+        </section>
+
+        <!-- SECÇÃO 2: PREVIEW -->
+        <section id="preview-section">
+            <div class="preview-container">
+                <h2>Preview da Imagem</h2>
+                <div class="image-preview">
+                    <img id="preview-original" alt="Preview da imagem original">
+                </div>
+            </div>
+            <div class="actions">
+                <div class="glass-button-wrap">
+                    <button class="glass-button btn-secondary" id="btn-cancel">
+                        <span class="glass-button-text">
+                            <svg class="button-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Cancel/Close icon (lens closing) -->
+                                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/>
+                                <line x1="8" y1="8" x2="16" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="16" y1="8" x2="8" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Cancelar
+                        </span>
+                    </button>
+                    <div class="glass-button-shadow"></div>
+                </div>
+                <div class="glass-button-wrap">
+                    <button class="glass-button btn-primary" id="btn-send">
+                        <span class="glass-button-text">
+                            <svg class="button-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Adjust/Sliders icon -->
+                                <line x1="4" y1="7" x2="10" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="13" cy="7" r="2" stroke="currentColor" stroke-width="2" fill="currentColor" opacity="0.5"/>
+                                <line x1="16" y1="7" x2="20" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="4" y1="12" x2="7" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="10" cy="12" r="2" stroke="currentColor" stroke-width="2" fill="currentColor" opacity="0.5"/>
+                                <line x1="13" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="4" y1="17" x2="13" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="16" cy="17" r="2" stroke="currentColor" stroke-width="2" fill="currentColor" opacity="0.5"/>
+                                <line x1="19" y1="17" x2="20" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Enviar para Edição
+                        </span>
+                    </button>
+                    <div class="glass-button-shadow"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECÇÃO 3: LOADING -->
+        <section id="loading-section">
+            <div class="spinner-wrapper">
+                <div class="spinner spinner-ring-1"></div>
+                <div class="spinner spinner-ring-2"></div>
+                <div class="spinner spinner-ring-3"></div>
+                <div class="spinner-core"></div>
+            </div>
+            <p>A processar imagem...</p>
+            <p style="font-size: 0.875rem; color: var(--text-tertiary);">Isto pode demorar alguns segundos</p>
+        </section>
+
+        <!-- SECÇÃO 4: RESULTADO -->
+        <section id="result-section">
+            <h2 class="text-center" style="font-size: 2rem; margin-bottom: 1rem;">Resultado</h2>
+
+            <!-- Imagens lado a lado -->
+            <div class="comparison">
+                <div class="image-box">
+                    <h3>Original</h3>
+                    <div class="image-wrapper">
+                        <img id="result-original" alt="Imagem original">
+                    </div>
+                </div>
+                <div class="image-box">
+                    <h3>Editada</h3>
+                    <div class="image-wrapper">
+                        <img id="result-edited" alt="Imagem editada">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel de formatos para redes sociais -->
+            <div class="format-panel">
+                <div class="format-header">
+                    <h3 class="format-title">
+                        <span>📱</span>
+                        <span>Optimizar para Redes Sociais</span>
+                    </h3>
+                    <p class="format-description">
+                        Adapta automaticamente a tua imagem editada para o formato ideal
+                    </p>
+                </div>
+
+                <div class="format-grid">
+                    <!-- Instagram Post -->
+                    <div class="glass-button-wrap">
+                        <button
+                            class="glass-button format-button"
+                            data-format="instagram-post"
+                            data-ratio="4:5"
+                            data-width="1080"
+                            data-height="1350"
+                            aria-label="Optimizar para Instagram Post, formato 4:5"
+                        >
+                            <span class="glass-button-text">
+                                <svg class="social-icon instagram-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="instagramGradient1" x1="0%" y1="100%" x2="100%" y2="0%">
+                                            <stop offset="0%" style="stop-color:#F77737;stop-opacity:1" />
+                                            <stop offset="50%" style="stop-color:#E1306C;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#833AB4;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect x="2" y="2" width="20" height="20" rx="5" stroke="url(#instagramGradient1)" stroke-width="2" fill="none"/>
+                                    <circle cx="12" cy="12" r="4" stroke="url(#instagramGradient1)" stroke-width="2" fill="none"/>
+                                    <circle cx="18.5" cy="5.5" r="1.5" fill="url(#instagramGradient1)"/>
+                                </svg>
+                                Instagram Post • 4:5 • 1080×1350px
+                            </span>
+                        </button>
+                        <div class="glass-button-shadow"></div>
+                    </div>
+
+                    <!-- Instagram Reel -->
+                    <div class="glass-button-wrap">
+                        <button
+                            class="glass-button format-button"
+                            data-format="instagram-reel"
+                            data-ratio="9:16"
+                            data-width="1080"
+                            data-height="1920"
+                            aria-label="Optimizar para Instagram Reel, formato 9:16"
+                        >
+                            <span class="glass-button-text">
+                                <svg class="social-icon instagram-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="instagramGradient2" x1="0%" y1="100%" x2="100%" y2="0%">
+                                            <stop offset="0%" style="stop-color:#F77737;stop-opacity:1" />
+                                            <stop offset="50%" style="stop-color:#E1306C;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#833AB4;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect x="2" y="2" width="20" height="20" rx="5" stroke="url(#instagramGradient2)" stroke-width="2" fill="none"/>
+                                    <circle cx="12" cy="12" r="4" stroke="url(#instagramGradient2)" stroke-width="2" fill="none"/>
+                                    <circle cx="18.5" cy="5.5" r="1.5" fill="url(#instagramGradient2)"/>
+                                </svg>
+                                Instagram Reel • 9:16 • 1080×1920px
+                            </span>
+                        </button>
+                        <div class="glass-button-shadow"></div>
+                    </div>
+
+                    <!-- Instagram Story -->
+                    <div class="glass-button-wrap">
+                        <button
+                            class="glass-button format-button"
+                            data-format="instagram-story"
+                            data-ratio="9:16"
+                            data-width="1080"
+                            data-height="1920"
+                            aria-label="Optimizar para Instagram Story, formato 9:16"
+                        >
+                            <span class="glass-button-text">
+                                <svg class="social-icon instagram-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="instagramGradient3" x1="0%" y1="100%" x2="100%" y2="0%">
+                                            <stop offset="0%" style="stop-color:#F77737;stop-opacity:1" />
+                                            <stop offset="50%" style="stop-color:#E1306C;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#833AB4;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect x="2" y="2" width="20" height="20" rx="5" stroke="url(#instagramGradient3)" stroke-width="2" fill="none"/>
+                                    <circle cx="12" cy="12" r="4" stroke="url(#instagramGradient3)" stroke-width="2" fill="none"/>
+                                    <circle cx="18.5" cy="5.5" r="1.5" fill="url(#instagramGradient3)"/>
+                                </svg>
+                                Instagram Story • 9:16 • 1080×1920px
+                            </span>
+                        </button>
+                        <div class="glass-button-shadow"></div>
+                    </div>
+
+                    <!-- TikTok -->
+                    <div class="glass-button-wrap">
+                        <button
+                            class="glass-button format-button"
+                            data-format="tiktok"
+                            data-ratio="9:16"
+                            data-width="1080"
+                            data-height="1920"
+                            aria-label="Optimizar para TikTok, formato 9:16"
+                        >
+                            <span class="glass-button-text">
+                                <svg class="social-icon tiktok-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="tiktokGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#25F4EE;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#FE2C55;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <!-- Main icon with gradient -->
+                                    <path d="M19 8.5C17.5 8.5 16 7.5 15.5 6V18C15.5 20.5 13.5 22.5 11 22.5C8.5 22.5 6.5 20.5 6.5 18C6.5 15.5 8.5 13.5 11 13.5V16C10 16 9.5 16.5 9.5 17.5C9.5 18.5 10 19 11 19C12 19 12.5 18.5 12.5 17.5V1.5H15.5C15.5 3 17 4.5 19 4.5V8.5Z"
+                                          fill="url(#tiktokGradient)"
+                                          stroke="url(#tiktokGradient)"
+                                          stroke-width="0.5"/>
+                                    <!-- Cyan outline effect -->
+                                    <path d="M19 8.5C17.5 8.5 16 7.5 15.5 6V18C15.5 20.5 13.5 22.5 11 22.5C8.5 22.5 6.5 20.5 6.5 18C6.5 15.5 8.5 13.5 11 13.5V16C10 16 9.5 16.5 9.5 17.5C9.5 18.5 10 19 11 19C12 19 12.5 18.5 12.5 17.5V1.5H15.5C15.5 3 17 4.5 19 4.5V8.5Z"
+                                          fill="none"
+                                          stroke="#25F4EE"
+                                          stroke-width="1"
+                                          opacity="0.6"
+                                          transform="translate(-0.5, -0.5)"/>
+                                    <!-- Pink shadow effect -->
+                                    <path d="M19 8.5C17.5 8.5 16 7.5 15.5 6V18C15.5 20.5 13.5 22.5 11 22.5C8.5 22.5 6.5 20.5 6.5 18C6.5 15.5 8.5 13.5 11 13.5V16C10 16 9.5 16.5 9.5 17.5C9.5 18.5 10 19 11 19C12 19 12.5 18.5 12.5 17.5V1.5H15.5C15.5 3 17 4.5 19 4.5V8.5Z"
+                                          fill="none"
+                                          stroke="#FE2C55"
+                                          stroke-width="1"
+                                          opacity="0.6"
+                                          transform="translate(0.5, 0.5)"/>
+                                </svg>
+                                TikTok Video • 9:16 • 1080×1920px
+                            </span>
+                        </button>
+                        <div class="glass-button-shadow"></div>
+                    </div>
+                </div>
+
+                <!-- Feedback visual -->
+                <div class="format-feedback" id="format-feedback" aria-live="polite"></div>
+            </div>
+
+            <!-- Botões de ação -->
+            <div class="download-actions">
+                <div class="glass-button-wrap">
+                    <button class="glass-button btn-secondary" id="btn-download">
+                        <span class="glass-button-text">
+                            <svg class="button-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Download image icon -->
+                                <rect x="4" y="4" width="16" height="14" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                                <path d="M 6 18 L 10 13 L 13 16 L 18 10" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                                <circle cx="16" cy="7" r="1.5" fill="currentColor"/>
+                                <path d="M 12 22 L 12 16 M 9 19 L 12 22 L 15 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span id="download-text">Download da Imagem Editada</span>
+                        </span>
+                    </button>
+                    <div class="glass-button-shadow"></div>
+                </div>
+                <div class="glass-button-wrap">
+                    <button class="glass-button btn-secondary" id="btn-new">
+                        <span class="glass-button-text">
+                            <svg class="button-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- New photo/camera plus icon -->
+                                <rect x="4" y="7" width="16" height="13" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                                <rect x="7" y="4" width="10" height="4" rx="1" fill="currentColor" opacity="0.4"/>
+                                <circle cx="12" cy="13.5" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
+                                <line x1="12" y1="2" x2="12" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="10.5" y1="3.5" x2="13.5" y2="3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Nova Foto
+                        </span>
+                    </button>
+                    <div class="glass-button-shadow"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECÇÃO 5: ERRO -->
+        <section id="error-section">
+            <div class="error-box">
+                <div class="error-icon">⚠️</div>
+                <p id="error-text"></p>
+                <div class="glass-button-wrap">
+                    <button class="glass-button btn-primary" id="btn-retry">
+                        <span class="glass-button-text">
+                            <svg class="button-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Refresh/Retry with lens icon -->
+                                <path d="M 20 12 A 8 8 0 1 1 12 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+                                <path d="M 17 4 L 20 7 L 17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5" fill="currentColor" opacity="0.3"/>
+                            </svg>
+                            Tentar Novamente
+                        </span>
+                    </button>
+                    <div class="glass-button-shadow"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // ==================== CONFIGURAÇÃO ====================
+        const CONFIG = {
+            webhookUrl: 'https://olancador.pt/webhook/fotografo',
+            maxFileSize: 10 * 1024 * 1024, // 10MB
+            acceptedFormats: ['image/jpeg', 'image/png', 'image/webp'],
+            acceptedMimeTypes: {
+                'image/jpeg': [0xFF, 0xD8, 0xFF],
+                'image/png': [0x89, 0x50, 0x4E, 0x47],
+                'image/webp': [0x52, 0x49, 0x46, 0x46]
+            },
+            requestTimeout: 120000, // 120 segundos
+            useFormData: true
+        };
+
+        // ==================== ESTADO DA APLICAÇÃO ====================
+        const AppState = {
+            currentFile: null,
+            originalImageUrl: null,
+            editedImageUrl: null,
+            resizedImageUrl: null,
+            currentView: 'upload',
+            selectedFormat: null
+        };
+
+        // ==================== GESTÃO DE UI ====================
+        const UI = {
+            showSection(sectionName) {
+                console.log(`📍 Mudando para secção: ${sectionName}`);
+
+                document.querySelectorAll('section').forEach(section => {
+                    section.classList.remove('active');
+                });
+
+                const section = document.getElementById(`${sectionName}-section`);
+                if (section) {
+                    section.classList.add('active');
+                    AppState.currentView = sectionName;
+
+                    // Smooth scroll to top
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                } else {
+                    console.error(`❌ Secção ${sectionName} não encontrada`);
+                }
+            },
+
+            showError(message) {
+                document.getElementById('error-text').textContent = message;
+                this.showSection('error');
+            },
+
+            resetApp() {
+                console.log('🔄 A resetar aplicação');
+
+                AppState.currentFile = null;
+                if (AppState.originalImageUrl) {
+                    URL.revokeObjectURL(AppState.originalImageUrl);
+                }
+                if (AppState.resizedImageUrl) {
+                    URL.revokeObjectURL(AppState.resizedImageUrl);
+                }
+                AppState.originalImageUrl = null;
+                AppState.editedImageUrl = null;
+                AppState.resizedImageUrl = null;
+                AppState.selectedFormat = null;
+
+                document.getElementById('file-input').value = '';
+
+                const images = ['preview-original', 'result-original', 'result-edited'];
+                images.forEach(id => {
+                    const img = document.getElementById(id);
+                    if (img) {
+                        img.onload = null;
+                        img.onerror = null;
+                        img.removeAttribute('src');
+                    }
+                });
+
+                document.querySelectorAll('.format-button').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+
+                document.getElementById('download-text').textContent = 'Download da Imagem Editada';
+
+                this.showSection('upload');
+            }
+        };
+
+        // ==================== GESTÃO DE FICHEIROS ====================
+        const FileHandler = {
+            validate(file) {
+                if (!file) {
+                    return { valid: false, error: 'Nenhum ficheiro selecionado.' };
+                }
+
+                if (file.size > CONFIG.maxFileSize) {
+                    const maxMB = CONFIG.maxFileSize / 1024 / 1024;
+                    return {
+                        valid: false,
+                        error: `Ficheiro muito grande. Máximo: ${maxMB}MB`
+                    };
+                }
+
+                if (!CONFIG.acceptedFormats.includes(file.type)) {
+                    return {
+                        valid: false,
+                        error: 'Formato não suportado. Use JPG, PNG ou WEBP.'
+                    };
+                }
+
+                return { valid: true };
+            },
+
+            async validateRealMimeType(file) {
+                try {
+                    const buffer = await file.slice(0, 4).arrayBuffer();
+                    const bytes = new Uint8Array(buffer);
+
+                    for (const [mimeType, signature] of Object.entries(CONFIG.acceptedMimeTypes)) {
+                        if (signature.every((byte, i) => bytes[i] === byte)) {
+                            return mimeType;
+                        }
+                    }
+
+                    return null;
+                } catch (error) {
+                    console.error('❌ Erro ao validar MIME type:', error);
+                    return file.type;
+                }
+            },
+
+            async toBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            },
+
+            createPreview(file) {
+                const url = URL.createObjectURL(file);
+                const img = document.getElementById('preview-original');
+
+                img.onload = null;
+                img.onerror = null;
+
+                img.onload = () => {
+                    console.log('✅ Preview criado com sucesso');
+                };
+
+                img.onerror = () => {
+                    UI.showError('Erro ao carregar preview da imagem.');
+                };
+
+                img.src = url;
+                AppState.originalImageUrl = url;
+            }
+        };
+
+        // ==================== IMAGE RESIZER ====================
+        const ImageResizer = {
+            async resizeImage(imageUrl, targetWidth, targetHeight) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+
+                    img.onload = () => {
+                        try {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+
+                            canvas.width = targetWidth;
+                            canvas.height = targetHeight;
+
+                            const scale = Math.max(
+                                targetWidth / img.width,
+                                targetHeight / img.height
+                            );
+
+                            const scaledWidth = img.width * scale;
+                            const scaledHeight = img.height * scale;
+
+                            const x = (targetWidth - scaledWidth) / 2;
+                            const y = (targetHeight - scaledHeight) / 2;
+
+                            ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+
+                            canvas.toBlob((blob) => {
+                                if (blob) {
+                                    const url = URL.createObjectURL(blob);
+                                    resolve(url);
+                                } else {
+                                    reject(new Error('Falha ao criar blob'));
+                                }
+                            }, 'image/jpeg', 0.95);
+
+                        } catch (error) {
+                            reject(error);
+                        }
+                    };
+
+                    img.onerror = () => {
+                        reject(new Error('Falha ao carregar imagem'));
+                    };
+
+                    img.src = imageUrl;
+                });
+            },
+
+            updateSelectedButton(button) {
+                document.querySelectorAll('.format-button').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+
+                button.classList.add('selected');
+            },
+
+            showFeedback(formatName, ratio) {
+                const feedback = document.getElementById('format-feedback');
+                feedback.textContent = `✓ Formato aplicado: ${formatName} (${ratio})`;
+                feedback.classList.add('show');
+
+                setTimeout(() => {
+                    feedback.classList.remove('show');
+                }, 3000);
+            },
+
+            updateDownloadButton(formatName, ratio) {
+                const downloadText = document.getElementById('download-text');
+                if (formatName) {
+                    downloadText.textContent = `Download (${formatName} ${ratio})`;
+                } else {
+                    downloadText.textContent = 'Download da Imagem Editada';
+                }
+            }
+        };
+
+        // ==================== API / WEBHOOK ====================
+        const API = {
+            async sendToWebhook(file) {
+                try {
+                    console.log('📤 A enviar para webhook:', CONFIG.webhookUrl);
+                    console.log('📁 Ficheiro:', file.name, '|', (file.size / 1024).toFixed(2), 'KB');
+
+                    let response;
+
+                    if (CONFIG.useFormData) {
+                        console.log('📦 Usando FormData...');
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        formData.append('filename', file.name);
+                        formData.append('mimeType', file.type);
+
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), CONFIG.requestTimeout);
+
+                        response = await fetch(CONFIG.webhookUrl, {
+                            method: 'POST',
+                            body: formData,
+                            signal: controller.signal
+                        });
+
+                        clearTimeout(timeoutId);
+
+                    } else {
+                        console.log('📦 Usando JSON/base64...');
+                        const base64 = await FileHandler.toBase64(file);
+                        const base64Clean = base64.split(',')[1];
+
+                        const payload = {
+                            image: base64Clean,
+                            filename: file.name,
+                            mimeType: file.type,
+                            size: file.size
+                        };
+
+                        console.log('📏 Tamanho da payload:', (JSON.stringify(payload).length / 1024).toFixed(2), 'KB');
+
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), CONFIG.requestTimeout);
+
+                        response = await fetch(CONFIG.webhookUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(payload),
+                            signal: controller.signal
+                        });
+
+                        clearTimeout(timeoutId);
+                    }
+
+                    console.log('📡 Status da resposta:', response.status, response.statusText);
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('❌ Erro do servidor:', errorText);
+                        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                    }
+
+                    const contentType = response.headers.get('content-type');
+                    console.log('📄 Content-Type:', contentType);
+
+                    let result;
+                    if (contentType && contentType.includes('application/json')) {
+                        result = await response.json();
+                    } else {
+                        const text = await response.text();
+                        console.log('📝 Resposta (texto):', text.substring(0, 200));
+                        result = { editedImage: text };
+                    }
+
+                    console.log('✅ Resposta do webhook:', result);
+
+                    if (!result.editedImage && !result.image) {
+                        throw new Error('Resposta inválida do servidor.');
+                    }
+
+                    return {
+                        success: true,
+                        editedImage: result.editedImage || result.image,
+                        originalImage: result.originalImage || AppState.originalImageUrl
+                    };
+
+                } catch (error) {
+                    console.error('❌ Erro na comunicação com webhook:', error);
+
+                    if (error.name === 'AbortError') {
+                        throw new Error('Tempo limite excedido. A imagem pode ser muito grande.');
+                    }
+
+                    if (error.message.includes('Failed to fetch')) {
+                        throw new Error('Erro de conexão. Verifique:\n• Webhook está ativo?\n• CORS configurado?\n• Internet funcional?');
+                    }
+
+                    throw error;
+                }
+            }
+        };
+
+        // ==================== EVENT HANDLERS ====================
+        const Events = {
+            init() {
+                console.log('🚀 A inicializar eventos...');
+                this.initDropZone();
+                this.initFileInput();
+                this.initButtons();
+                this.initFormatButtons();
+            },
+
+            initDropZone() {
+                const dropZone = document.getElementById('drop-zone');
+
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('drag-over');
+                });
+
+                dropZone.addEventListener('dragleave', () => {
+                    dropZone.classList.remove('drag-over');
+                });
+
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('drag-over');
+
+                    const file = e.dataTransfer.files[0];
+                    this.handleFileSelect(file);
+                });
+
+                dropZone.addEventListener('click', (e) => {
+                    if (e.target.tagName !== 'BUTTON' && !e.target.closest('.glass-button')) {
+                        document.getElementById('file-input').click();
+                    }
+                });
+            },
+
+            initFileInput() {
+                document.getElementById('file-input').addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    this.handleFileSelect(file);
+                });
+            },
+
+            async handleFileSelect(file) {
+                console.log('📁 Ficheiro selecionado:', file?.name);
+
+                const validation = FileHandler.validate(file);
+                if (!validation.valid) {
+                    UI.showError(validation.error);
+                    return;
+                }
+
+                const realMimeType = await FileHandler.validateRealMimeType(file);
+                if (!realMimeType || !CONFIG.acceptedFormats.includes(realMimeType)) {
+                    UI.showError('Tipo de ficheiro inválido. Use apenas imagens JPG, PNG ou WEBP.');
+                    return;
+                }
+
+                AppState.currentFile = file;
+                FileHandler.createPreview(file);
+                UI.showSection('preview');
+            },
+
+            initButtons() {
+                document.getElementById('btn-send').addEventListener('click', () => {
+                    this.handleSend();
+                });
+
+                document.getElementById('btn-cancel').addEventListener('click', () => {
+                    UI.resetApp();
+                });
+
+                document.getElementById('btn-download').addEventListener('click', () => {
+                    this.handleDownload();
+                });
+
+                document.getElementById('btn-new').addEventListener('click', () => {
+                    UI.resetApp();
+                });
+
+                document.getElementById('btn-retry').addEventListener('click', () => {
+                    UI.resetApp();
+                });
+            },
+
+            initFormatButtons() {
+                document.querySelectorAll('.format-button').forEach(button => {
+                    button.addEventListener('click', async () => {
+                        if (button.classList.contains('loading')) return;
+
+                        const format = button.dataset.format;
+                        const ratio = button.dataset.ratio;
+                        const width = parseInt(button.dataset.width);
+                        const height = parseInt(button.dataset.height);
+                        const formatName = button.querySelector('.glass-button-text').textContent.trim().split('•')[0].trim();
+
+                        try {
+                            button.classList.add('loading');
+
+                            console.log(`📐 A redimensionar para ${formatName} (${width}x${height})...`);
+
+                            if (AppState.resizedImageUrl) {
+                                URL.revokeObjectURL(AppState.resizedImageUrl);
+                            }
+
+                            const resizedUrl = await ImageResizer.resizeImage(
+                                AppState.editedImageUrl,
+                                width,
+                                height
+                            );
+
+                            AppState.resizedImageUrl = resizedUrl;
+                            AppState.selectedFormat = { format, ratio, width, height, name: formatName };
+
+                            ImageResizer.updateSelectedButton(button);
+                            ImageResizer.showFeedback(formatName, ratio);
+                            ImageResizer.updateDownloadButton(formatName, ratio);
+
+                            console.log(`✅ Imagem redimensionada para ${formatName}`);
+
+                        } catch (error) {
+                            console.error('❌ Erro ao redimensionar:', error);
+                            UI.showError('Erro ao redimensionar a imagem. Tente novamente.');
+                        } finally {
+                            button.classList.remove('loading');
+                        }
+                    });
+                });
+            },
+
+            async handleSend() {
+                try {
+                    console.log('🚀 A enviar imagem para processamento...');
+
+                    UI.showSection('loading');
+
+                    const result = await API.sendToWebhook(AppState.currentFile);
+
+                    AppState.editedImageUrl = result.editedImage;
+
+                    document.getElementById('result-original').src = AppState.originalImageUrl;
+                    document.getElementById('result-edited').src = result.editedImage;
+
+                    console.log('✅ Imagem processada com sucesso');
+                    UI.showSection('result');
+
+                } catch (error) {
+                    console.error('❌ Erro ao processar imagem:', error);
+                    UI.showError(error.message || 'Erro ao processar a imagem. Tente novamente.');
+                }
+            },
+
+            handleDownload() {
+                const imageUrl = AppState.resizedImageUrl || AppState.editedImageUrl;
+
+                if (!imageUrl) {
+                    UI.showError('Nenhuma imagem para download.');
+                    return;
+                }
+
+                console.log('💾 A fazer download da imagem...');
+
+                const link = document.createElement('a');
+                link.href = imageUrl;
+
+                const timestamp = new Date().getTime();
+                const originalName = AppState.currentFile?.name || 'imagem';
+                const baseName = originalName.split('.')[0];
+                const extension = originalName.split('.').pop();
+
+                if (AppState.selectedFormat) {
+                    const formatSlug = AppState.selectedFormat.format;
+                    link.download = `${baseName}_${formatSlug}_${timestamp}.${extension}`;
+                } else {
+                    link.download = `${baseName}_editada_${timestamp}.${extension}`;
+                }
+
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                console.log('✅ Download iniciado');
+            }
+        };
+
+        // ==================== RIPPLE EFFECT ====================
+        const RippleEffect = {
+            init() {
+                document.querySelectorAll('.glass-button').forEach(button => {
+                    button.addEventListener('click', (e) => this.createRipple(e, button));
+                });
+            },
+
+            createRipple(event, button) {
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple-effect');
+
+                const rect = button.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = event.clientX - rect.left - size / 2;
+                const y = event.clientY - rect.top - size / 2;
+
+                ripple.style.width = ripple.style.height = `${size}px`;
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+
+                button.appendChild(ripple);
+
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            }
+        };
+
+        // ==================== INICIALIZAÇÃO ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('═══════════════════════════════════════');
+            console.log('  O fotografo - Editor de Fotografias  ');
+            console.log('    ✨ Glass Morphism Premium ✨     ');
+            console.log('═══════════════════════════════════════');
+            console.log('🌐 Webhook URL:', CONFIG.webhookUrl);
+            console.log('📦 Modo de envio:', CONFIG.useFormData ? 'FormData' : 'JSON/base64');
+            console.log('📏 Tamanho máximo:', (CONFIG.maxFileSize / 1024 / 1024), 'MB');
+            console.log('⏱️ Timeout:', (CONFIG.requestTimeout / 1000), 'segundos');
+            console.log('📱 Formatos: Instagram + TikTok com ícones SVG');
+            console.log('🎨 Design: Glass Morphism + Social Media Icons + Ripple Effect');
+            console.log('═══════════════════════════════════════');
+            Events.init();
+            RippleEffect.init();
+        });
+    </script>
+</body>
+</html>
