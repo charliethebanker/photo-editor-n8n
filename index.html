@@ -94,6 +94,19 @@
             }
         }
 
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+                filter: blur(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0px);
+            }
+        }
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -101,6 +114,63 @@
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
+        }
+
+        @keyframes breathe {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.3));
+            }
+            50% {
+                filter: drop-shadow(0 0 40px rgba(99, 102, 241, 0.6));
+            }
+        }
+
+        @keyframes rotateGear {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0);
+                opacity: 0.6;
+            }
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        @keyframes buttonPress {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(0.95);
+            }
+            100% {
+                transform: scale(1);
+            }
         }
 
         /* ==================== BASE ==================== */
@@ -152,21 +222,83 @@
             animation: fadeIn 0.8s ease-out;
         }
 
+        .header-icon-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .camera-icon {
+            width: 60px;
+            height: 60px;
+            animation: glow 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.4));
+        }
+
+        .camera-icon .lens {
+            animation: rotateGear 20s linear infinite;
+            transform-origin: center;
+        }
+
         header h1 {
             font-size: 3rem;
             font-weight: 700;
             background: linear-gradient(135deg, var(--accent-color), var(--accent-light), var(--color-chart-1));
+            background-size: 200% 200%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             margin-bottom: 0.5rem;
             letter-spacing: -1px;
-            text-shadow: 0 0 40px rgba(99, 102, 241, 0.3);
+            position: relative;
+            display: inline-block;
+            animation: fadeInDown 1s ease-out 0.2s both;
+        }
+
+        header h1::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.3) 50%,
+                transparent 100%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            z-index: 1;
         }
 
         header p {
             color: var(--text-secondary);
             font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            animation: fadeInDown 1s ease-out 0.4s both;
+        }
+
+        header p::before {
+            content: '✨';
+            margin-right: 0.5rem;
+            display: inline-block;
+            animation: breathe 2s ease-in-out infinite;
+        }
+
+        header p::after {
+            content: '✨';
+            margin-left: 0.5rem;
+            display: inline-block;
+            animation: breathe 2s ease-in-out infinite;
         }
 
         /* ==================== SECÇÕES ==================== */
@@ -260,6 +392,26 @@
             justify-content: center;
             gap: 0.5rem;
             text-decoration: none;
+            overflow: hidden;
+        }
+
+        /* Ripple effect container */
+        .glass-button .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(
+                circle,
+                rgba(255, 255, 255, 0.6) 0%,
+                rgba(255, 255, 255, 0.3) 50%,
+                transparent 100%
+            );
+            pointer-events: none;
+            transform: scale(0);
+            animation: ripple 0.6s ease-out;
+        }
+
+        .glass-button:active {
+            animation: buttonPress 0.3s ease-out;
         }
 
         .glass-button:hover {
@@ -420,18 +572,42 @@
 
         /* ==================== SOCIAL MEDIA ICONS (SVG) ==================== */
         .social-icon {
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             flex-shrink: 0;
             display: inline-flex;
             vertical-align: middle;
             filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .glass-button:hover .social-icon {
-            filter: drop-shadow(0 4px 8px rgba(255, 255, 255, 0.5));
-            transform: scale(1.1);
+            filter: drop-shadow(0 6px 12px rgba(255, 255, 255, 0.4));
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .glass-button:active .social-icon {
+            transform: scale(1.05) rotate(-5deg);
+        }
+
+        /* Instagram icon specific */
+        .social-icon.instagram-icon {
+            filter: drop-shadow(0 2px 6px rgba(225, 48, 108, 0.4));
+        }
+
+        .glass-button:hover .social-icon.instagram-icon {
+            filter: drop-shadow(0 6px 16px rgba(225, 48, 108, 0.6));
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        /* TikTok icon specific */
+        .social-icon.tiktok-icon {
+            filter: drop-shadow(0 2px 6px rgba(37, 244, 238, 0.4));
+        }
+
+        .glass-button:hover .social-icon.tiktok-icon {
+            filter: drop-shadow(0 6px 16px rgba(37, 244, 238, 0.6));
+            animation: glow 2s ease-in-out infinite;
         }
 
         /* ==================== UPLOAD SECTION ==================== */
@@ -462,6 +638,30 @@
             box-shadow:
                 inset 0 1px 1px rgba(255, 255, 255, 0.05),
                 0 8px 32px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #drop-zone::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(
+                circle,
+                rgba(99, 102, 241, 0.1) 0%,
+                transparent 70%
+            );
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        #drop-zone:hover::before {
+            opacity: 1;
+            animation: pulse 2s ease-in-out infinite;
         }
 
         #drop-zone:hover {
@@ -470,23 +670,67 @@
             transform: scale(1.02) translateY(-4px);
             box-shadow:
                 inset 0 1px 1px rgba(255, 255, 255, 0.1),
-                0 12px 40px rgba(99, 102, 241, 0.2);
+                0 12px 40px rgba(99, 102, 241, 0.2),
+                0 0 0 1px rgba(99, 102, 241, 0.1);
         }
 
         #drop-zone.drag-over {
             border-color: var(--accent-light);
-            background: rgba(99, 102, 241, 0.1);
+            background: rgba(99, 102, 241, 0.15);
             transform: scale(1.05);
             box-shadow:
                 inset 0 1px 1px rgba(255, 255, 255, 0.15),
-                0 0 40px rgba(99, 102, 241, 0.4);
+                0 0 40px rgba(99, 102, 241, 0.4),
+                0 0 0 2px var(--accent-light);
+        }
+
+        #drop-zone.drag-over::before {
+            opacity: 1;
+        }
+
+        .upload-icon-wrapper {
+            position: relative;
+            margin-bottom: 1.5rem;
+            animation: breathe 3s ease-in-out infinite;
         }
 
         .upload-icon {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            opacity: 0.8;
+            width: 80px;
+            height: 80px;
             filter: drop-shadow(0 4px 12px rgba(99, 102, 241, 0.3));
+            transition: all 0.3s ease;
+        }
+
+        #drop-zone:hover .upload-icon {
+            filter: drop-shadow(0 8px 24px rgba(99, 102, 241, 0.5));
+            transform: translateY(-5px);
+        }
+
+        #drop-zone.drag-over .upload-icon {
+            filter: drop-shadow(0 12px 32px rgba(99, 102, 241, 0.7));
+            transform: scale(1.1) translateY(-8px);
+            animation: breathe 1s ease-in-out infinite;
+        }
+
+        .upload-icon .cloud-part {
+            transition: transform 0.3s ease;
+        }
+
+        #drop-zone:hover .upload-icon .cloud-part {
+            transform: translateY(-3px);
+        }
+
+        .upload-icon .arrow-part {
+            transition: transform 0.3s ease;
+        }
+
+        #drop-zone:hover .upload-icon .arrow-part {
+            transform: translateY(3px);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        #drop-zone.drag-over .upload-icon .arrow-part {
+            animation: pulse 0.5s ease-in-out infinite;
         }
 
         #drop-zone h2 {
@@ -524,12 +768,41 @@
             box-shadow:
                 inset 0 1px 1px rgba(255, 255, 255, 0.05),
                 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .preview-container:hover {
+            border-color: rgba(99, 102, 241, 0.2);
+            box-shadow:
+                inset 0 1px 1px rgba(255, 255, 255, 0.08),
+                0 12px 40px rgba(99, 102, 241, 0.15);
         }
 
         .preview-container h2 {
             margin-bottom: 1.5rem;
             text-align: center;
             color: var(--text-primary);
+            font-weight: 600;
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .preview-container h2::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-light));
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .preview-container:hover h2::after {
+            width: 100px;
         }
 
         .image-preview {
@@ -568,20 +841,70 @@
             gap: 2rem;
         }
 
+        .spinner-wrapper {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .spinner {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+        }
+
+        .spinner-ring-1 {
+            border: 4px solid transparent;
+            border-top-color: var(--accent-color);
+            border-right-color: var(--accent-color);
+            animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .spinner-ring-2 {
+            border: 4px solid transparent;
+            border-bottom-color: var(--accent-light);
+            border-left-color: var(--accent-light);
+            animation: spin 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite reverse;
+            box-shadow: 0 0 25px rgba(129, 140, 248, 0.3);
+        }
+
+        .spinner-ring-3 {
             width: 60px;
             height: 60px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top-color: var(--accent-color);
-            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: var(--color-chart-1);
             animation: spin 1s linear infinite;
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .spinner-core {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
         }
 
         #loading-section p {
             font-size: 1.25rem;
             color: var(--text-secondary);
             animation: pulse 2s ease-in-out infinite;
+            font-weight: 500;
+        }
+
+        #loading-section p:first-of-type {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light), var(--color-chart-1));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.5rem;
+            font-weight: 600;
         }
 
         /* ==================== RESULT SECTION ==================== */
@@ -589,6 +912,26 @@
             flex-direction: column;
             gap: 2rem;
             flex: 1;
+        }
+
+        #result-section > h2 {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        #result-section > h2::before {
+            content: '✨';
+            margin-right: 1rem;
+            display: inline-block;
+            animation: breathe 2s ease-in-out infinite;
+        }
+
+        #result-section > h2::after {
+            content: '✨';
+            margin-left: 1rem;
+            display: inline-block;
+            animation: breathe 2s ease-in-out infinite 1s;
         }
 
         .comparison {
@@ -609,14 +952,37 @@
                 inset 0 1px 1px rgba(255, 255, 255, 0.05),
                 0 8px 32px rgba(0, 0, 0, 0.4);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(99, 102, 241, 0.1),
+                transparent
+            );
+            transition: left 0.5s ease;
+        }
+
+        .image-box:hover::before {
+            left: 100%;
         }
 
         .image-box:hover {
-            transform: translateY(-8px);
+            transform: translateY(-8px) scale(1.02);
             box-shadow:
                 inset 0 1px 1px rgba(255, 255, 255, 0.08),
-                0 12px 40px rgba(0, 0, 0, 0.5);
-            border-color: rgba(255, 255, 255, 0.12);
+                0 16px 48px rgba(99, 102, 241, 0.2),
+                0 0 0 1px rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.3);
         }
 
         .image-box h3 {
@@ -688,6 +1054,26 @@
             gap: 1.5rem;
             margin-bottom: 1rem;
             justify-items: center;
+        }
+
+        .format-grid .glass-button-wrap {
+            animation: fadeIn 0.6s ease-out both;
+        }
+
+        .format-grid .glass-button-wrap:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .format-grid .glass-button-wrap:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .format-grid .glass-button-wrap:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .format-grid .glass-button-wrap:nth-child(4) {
+            animation-delay: 0.4s;
         }
 
         /* Selected state for format buttons */
@@ -872,36 +1258,83 @@
     <div class="gradient-bg">
         <svg width="100%" height="100%" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
             <defs>
+                <!-- Enhanced gradients with more vibrant colors -->
                 <linearGradient id="rev_grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color: var(--color-primary); stop-opacity: 0.8" />
-                    <stop offset="100%" style="stop-color: var(--color-chart-3); stop-opacity: 0.6" />
+                    <stop offset="0%" style="stop-color: #6366f1; stop-opacity: 0.9">
+                        <animate attributeName="stop-color" values="#6366f1;#818cf8;#6366f1" dur="10s" repeatCount="indefinite"/>
+                    </stop>
+                    <stop offset="100%" style="stop-color: #f59e0b; stop-opacity: 0.7">
+                        <animate attributeName="stop-color" values="#f59e0b;#fbbf24;#f59e0b" dur="12s" repeatCount="indefinite"/>
+                    </stop>
                 </linearGradient>
                 <linearGradient id="rev_grad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color: var(--color-chart-4); stop-opacity: 0.9" />
-                    <stop offset="50%" style="stop-color: var(--color-secondary); stop-opacity: 0.7" />
-                    <stop offset="100%" style="stop-color: var(--color-chart-1); stop-opacity: 0.6" />
+                    <stop offset="0%" style="stop-color: #ef4444; stop-opacity: 0.8">
+                        <animate attributeName="stop-color" values="#ef4444;#f87171;#ef4444" dur="14s" repeatCount="indefinite"/>
+                    </stop>
+                    <stop offset="50%" style="stop-color: #818cf8; stop-opacity: 0.7">
+                        <animate attributeName="stop-color" values="#818cf8;#a5b4fc;#818cf8" dur="11s" repeatCount="indefinite"/>
+                    </stop>
+                    <stop offset="100%" style="stop-color: #10b981; stop-opacity: 0.6">
+                        <animate attributeName="stop-color" values="#10b981;#34d399;#10b981" dur="13s" repeatCount="indefinite"/>
+                    </stop>
                 </linearGradient>
                 <radialGradient id="rev_grad3" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" style="stop-color: var(--color-destructive); stop-opacity: 0.8" />
-                    <stop offset="100%" style="stop-color: var(--color-chart-5); stop-opacity: 0.4" />
+                    <stop offset="0%" style="stop-color: #8b5cf6; stop-opacity: 0.8">
+                        <animate attributeName="stop-color" values="#8b5cf6;#a78bfa;#8b5cf6" dur="15s" repeatCount="indefinite"/>
+                    </stop>
+                    <stop offset="100%" style="stop-color: #ec4899; stop-opacity: 0.5">
+                        <animate attributeName="stop-color" values="#ec4899;#f472b6;#ec4899" dur="16s" repeatCount="indefinite"/>
+                    </stop>
+                </radialGradient>
+                <radialGradient id="rev_grad4" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" style="stop-color: #06b6d4; stop-opacity: 0.7">
+                        <animate attributeName="stop-color" values="#06b6d4;#22d3ee;#06b6d4" dur="18s" repeatCount="indefinite"/>
+                    </stop>
+                    <stop offset="100%" style="stop-color: #3b82f6; stop-opacity: 0.5">
+                        <animate attributeName="stop-color" values="#3b82f6;#60a5fa;#3b82f6" dur="17s" repeatCount="indefinite"/>
+                    </stop>
                 </radialGradient>
                 <filter id="rev_blur1" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="35"/>
+                    <feGaussianBlur stdDeviation="40"/>
                 </filter>
                 <filter id="rev_blur2" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="25"/>
+                    <feGaussianBlur stdDeviation="30"/>
                 </filter>
                 <filter id="rev_blur3" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="45"/>
+                    <feGaussianBlur stdDeviation="50"/>
+                </filter>
+                <filter id="rev_blur4" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="35"/>
                 </filter>
             </defs>
-            <g style="animation: float1 20s ease-in-out infinite;">
-                <ellipse cx="200" cy="500" rx="250" ry="180" fill="url(#rev_grad1)" filter="url(#rev_blur1)" transform="rotate(-30 200 500)"/>
-                <rect x="500" y="100" width="300" height="250" rx="80" fill="url(#rev_grad2)" filter="url(#rev_blur2)" transform="rotate(15 650 225)"/>
+            <!-- Layer 1 - Slow floating shapes -->
+            <g style="animation: float1 25s ease-in-out infinite;">
+                <ellipse cx="200" cy="500" rx="280" ry="200" fill="url(#rev_grad1)" filter="url(#rev_blur1)" transform="rotate(-30 200 500)">
+                    <animateTransform attributeName="transform" type="rotate" values="-30 200 500;-20 200 500;-30 200 500" dur="20s" repeatCount="indefinite"/>
+                </ellipse>
+                <rect x="500" y="100" width="320" height="280" rx="90" fill="url(#rev_grad2)" filter="url(#rev_blur2)" transform="rotate(15 650 225)">
+                    <animateTransform attributeName="transform" type="rotate" values="15 650 225;25 650 225;15 650 225" dur="22s" repeatCount="indefinite"/>
+                </rect>
             </g>
-            <g style="animation: float2 25s ease-in-out infinite;">
-                <circle cx="650" cy="450" r="150" fill="url(#rev_grad3)" filter="url(#rev_blur3)" opacity="0.7"/>
-                <ellipse cx="50" cy="150" rx="180" ry="120" fill="var(--color-accent)" filter="url(#rev_blur2)" opacity="0.8"/>
+            <!-- Layer 2 - Medium speed floating shapes -->
+            <g style="animation: float2 30s ease-in-out infinite;">
+                <circle cx="650" cy="450" r="170" fill="url(#rev_grad3)" filter="url(#rev_blur3)" opacity="0.7">
+                    <animate attributeName="r" values="170;190;170" dur="18s" repeatCount="indefinite"/>
+                </circle>
+                <ellipse cx="50" cy="150" rx="200" ry="140" fill="url(#rev_grad4)" filter="url(#rev_blur2)" opacity="0.8">
+                    <animate attributeName="rx" values="200;220;200" dur="16s" repeatCount="indefinite"/>
+                    <animate attributeName="ry" values="140;160;140" dur="17s" repeatCount="indefinite"/>
+                </ellipse>
+            </g>
+            <!-- Layer 3 - Additional orbs for depth -->
+            <g style="animation: float1 35s ease-in-out infinite reverse;">
+                <circle cx="400" cy="300" r="120" fill="url(#rev_grad1)" filter="url(#rev_blur4)" opacity="0.6">
+                    <animate attributeName="cx" values="400;420;400" dur="24s" repeatCount="indefinite"/>
+                    <animate attributeName="cy" values="300;280;300" dur="26s" repeatCount="indefinite"/>
+                </circle>
+                <ellipse cx="700" cy="100" rx="150" ry="100" fill="url(#rev_grad3)" filter="url(#rev_blur3)" opacity="0.5">
+                    <animateTransform attributeName="transform" type="rotate" values="0 700 100;360 700 100" dur="40s" repeatCount="indefinite"/>
+                </ellipse>
             </g>
         </svg>
     </div>
@@ -909,6 +1342,69 @@
     <div id="app">
         <!-- HEADER -->
         <header>
+            <div class="header-icon-wrapper">
+                <svg class="camera-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Camera Body -->
+                    <rect x="8" y="20" width="48" height="32" rx="6" fill="url(#cameraGradient)" stroke="url(#cameraBorder)" stroke-width="2"/>
+
+                    <!-- Top viewfinder -->
+                    <rect x="20" y="14" width="24" height="8" rx="2" fill="url(#viewfinderGradient)"/>
+
+                    <!-- Lens outer ring -->
+                    <circle cx="32" cy="36" r="12" fill="url(#lensOuterGradient)" stroke="url(#cameraBorder)" stroke-width="1.5"/>
+
+                    <!-- Lens middle ring -->
+                    <circle cx="32" cy="36" r="9" class="lens" fill="url(#lensMidGradient)" opacity="0.8"/>
+
+                    <!-- Lens inner glass -->
+                    <circle cx="32" cy="36" r="6" fill="url(#lensInnerGradient)"/>
+
+                    <!-- Glass reflection -->
+                    <ellipse cx="29" cy="33" rx="3" ry="2.5" fill="rgba(255,255,255,0.4)"/>
+
+                    <!-- Flash -->
+                    <circle cx="48" cy="26" r="3" fill="#FCD34D" opacity="0.9">
+                        <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+
+                    <!-- Shutter button -->
+                    <circle cx="50" cy="38" r="2.5" fill="url(#buttonGradient)"/>
+
+                    <!-- Gradients -->
+                    <defs>
+                        <linearGradient id="cameraGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#818cf8;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#a5b4fc;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="cameraBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#c7d2fe;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#e0e7ff;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="viewfinderGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
+                        </linearGradient>
+                        <radialGradient id="lensOuterGradient">
+                            <stop offset="0%" style="stop-color:#1e293b;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+                        </radialGradient>
+                        <radialGradient id="lensMidGradient">
+                            <stop offset="0%" style="stop-color:#334155;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+                        </radialGradient>
+                        <radialGradient id="lensInnerGradient">
+                            <stop offset="0%" style="stop-color:#10b981;stop-opacity:0.4" />
+                            <stop offset="50%" style="stop-color:#059669;stop-opacity:0.6" />
+                            <stop offset="100%" style="stop-color:#047857;stop-opacity:0.8" />
+                        </radialGradient>
+                        <linearGradient id="buttonGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ef4444;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#dc2626;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
             <h1>O fotografo</h1>
             <p>Editor de fotografias automático</p>
         </header>
@@ -916,7 +1412,62 @@
         <!-- SECÇÃO 1: UPLOAD -->
         <section id="upload-section" class="active">
             <div id="drop-zone">
-                <div class="upload-icon">📸</div>
+                <div class="upload-icon-wrapper">
+                    <svg class="upload-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Cloud -->
+                        <g class="cloud-part">
+                            <path d="M73 50C73 47.5 71.5 45.5 69.5 44.5C69.5 37 63.5 31 56 31C51.5 31 47.5 33.5 45.5 37C44.5 36.5 43.5 36.5 42.5 36.5C37.5 36.5 33.5 40.5 33.5 45.5C29.5 46.5 26.5 50 26.5 54.5C26.5 59.5 30.5 63.5 35.5 63.5H68.5C72.5 63.5 75.5 60.5 75.5 56.5C75.5 53 73 50 73 50Z"
+                                  fill="url(#cloudGradient)"
+                                  stroke="url(#cloudBorder)"
+                                  stroke-width="1.5"
+                                  stroke-linejoin="round"/>
+                        </g>
+
+                        <!-- Upload Arrow -->
+                        <g class="arrow-part">
+                            <!-- Arrow shaft -->
+                            <rect x="47" y="45" width="6" height="30" rx="2" fill="url(#arrowGradient)"/>
+
+                            <!-- Arrow head -->
+                            <path d="M50 35 L40 45 L45 45 L45 50 L55 50 L55 45 L60 45 Z"
+                                  fill="url(#arrowHeadGradient)"
+                                  stroke="rgba(255,255,255,0.2)"
+                                  stroke-width="1"/>
+
+                            <!-- Sparkles -->
+                            <circle cx="35" cy="48" r="2" fill="#FCD34D" opacity="0.8">
+                                <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="65" cy="52" r="2" fill="#A5B4FC" opacity="0.8">
+                                <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                            </circle>
+                            <circle cx="42" cy="60" r="1.5" fill="#10B981" opacity="0.8">
+                                <animate attributeName="opacity" values="0.3;1;0.3" dur="1.8s" repeatCount="indefinite" begin="0.3s"/>
+                            </circle>
+                        </g>
+
+                        <!-- Gradients -->
+                        <defs>
+                            <linearGradient id="cloudGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0.8" />
+                                <stop offset="50%" style="stop-color:#818cf8;stop-opacity:0.9" />
+                                <stop offset="100%" style="stop-color:#a5b4fc;stop-opacity:0.8" />
+                            </linearGradient>
+                            <linearGradient id="cloudBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#c7d2fe;stop-opacity:0.6" />
+                                <stop offset="100%" style="stop-color:#e0e7ff;stop-opacity:0.8" />
+                            </linearGradient>
+                            <linearGradient id="arrowGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#e0e7ff;stop-opacity:0.9" />
+                            </linearGradient>
+                            <linearGradient id="arrowHeadGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
                 <h2>Arraste a sua foto aqui</h2>
                 <p>ou clique para selecionar um ficheiro</p>
                 <div class="glass-button-wrap">
@@ -958,7 +1509,12 @@
 
         <!-- SECÇÃO 3: LOADING -->
         <section id="loading-section">
-            <div class="spinner"></div>
+            <div class="spinner-wrapper">
+                <div class="spinner spinner-ring-1"></div>
+                <div class="spinner spinner-ring-2"></div>
+                <div class="spinner spinner-ring-3"></div>
+                <div class="spinner-core"></div>
+            </div>
             <p>A processar imagem...</p>
             <p style="font-size: 0.875rem; color: var(--text-tertiary);">Isto pode demorar alguns segundos</p>
         </section>
@@ -1007,10 +1563,17 @@
                             aria-label="Optimizar para Instagram Post, formato 4:5"
                         >
                             <span class="glass-button-text">
-                                <svg class="social-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="1.5"/>
-                                    <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.5"/>
-                                    <circle cx="18" cy="6" r="1.5" fill="currentColor"/>
+                                <svg class="social-icon instagram-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="instagramGradient1" x1="0%" y1="100%" x2="100%" y2="0%">
+                                            <stop offset="0%" style="stop-color:#F77737;stop-opacity:1" />
+                                            <stop offset="50%" style="stop-color:#E1306C;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#833AB4;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect x="2" y="2" width="20" height="20" rx="5" stroke="url(#instagramGradient1)" stroke-width="2" fill="none"/>
+                                    <circle cx="12" cy="12" r="4" stroke="url(#instagramGradient1)" stroke-width="2" fill="none"/>
+                                    <circle cx="18.5" cy="5.5" r="1.5" fill="url(#instagramGradient1)"/>
                                 </svg>
                                 Instagram Post • 4:5 • 1080×1350px
                             </span>
@@ -1029,10 +1592,17 @@
                             aria-label="Optimizar para Instagram Reel, formato 9:16"
                         >
                             <span class="glass-button-text">
-                                <svg class="social-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="1.5"/>
-                                    <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.5"/>
-                                    <circle cx="18" cy="6" r="1.5" fill="currentColor"/>
+                                <svg class="social-icon instagram-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="instagramGradient2" x1="0%" y1="100%" x2="100%" y2="0%">
+                                            <stop offset="0%" style="stop-color:#F77737;stop-opacity:1" />
+                                            <stop offset="50%" style="stop-color:#E1306C;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#833AB4;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect x="2" y="2" width="20" height="20" rx="5" stroke="url(#instagramGradient2)" stroke-width="2" fill="none"/>
+                                    <circle cx="12" cy="12" r="4" stroke="url(#instagramGradient2)" stroke-width="2" fill="none"/>
+                                    <circle cx="18.5" cy="5.5" r="1.5" fill="url(#instagramGradient2)"/>
                                 </svg>
                                 Instagram Reel • 9:16 • 1080×1920px
                             </span>
@@ -1051,10 +1621,17 @@
                             aria-label="Optimizar para Instagram Story, formato 9:16"
                         >
                             <span class="glass-button-text">
-                                <svg class="social-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="1.5"/>
-                                    <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.5"/>
-                                    <circle cx="18" cy="6" r="1.5" fill="currentColor"/>
+                                <svg class="social-icon instagram-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="instagramGradient3" x1="0%" y1="100%" x2="100%" y2="0%">
+                                            <stop offset="0%" style="stop-color:#F77737;stop-opacity:1" />
+                                            <stop offset="50%" style="stop-color:#E1306C;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#833AB4;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect x="2" y="2" width="20" height="20" rx="5" stroke="url(#instagramGradient3)" stroke-width="2" fill="none"/>
+                                    <circle cx="12" cy="12" r="4" stroke="url(#instagramGradient3)" stroke-width="2" fill="none"/>
+                                    <circle cx="18.5" cy="5.5" r="1.5" fill="url(#instagramGradient3)"/>
                                 </svg>
                                 Instagram Story • 9:16 • 1080×1920px
                             </span>
@@ -1073,8 +1650,32 @@
                             aria-label="Optimizar para TikTok, formato 9:16"
                         >
                             <span class="glass-button-text">
-                                <svg class="social-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M19 8.5C17.5 8.5 16 7.5 15.5 6V18C15.5 20.5 13.5 22.5 11 22.5C8.5 22.5 6.5 20.5 6.5 18C6.5 15.5 8.5 13.5 11 13.5V16C10 16 9.5 16.5 9.5 17.5C9.5 18.5 10 19 11 19C12 19 12.5 18.5 12.5 17.5V1.5H15.5C15.5 3 17 4.5 19 4.5V8.5Z" fill="currentColor"/>
+                                <svg class="social-icon tiktok-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="tiktokGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#25F4EE;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#FE2C55;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <!-- Main icon with gradient -->
+                                    <path d="M19 8.5C17.5 8.5 16 7.5 15.5 6V18C15.5 20.5 13.5 22.5 11 22.5C8.5 22.5 6.5 20.5 6.5 18C6.5 15.5 8.5 13.5 11 13.5V16C10 16 9.5 16.5 9.5 17.5C9.5 18.5 10 19 11 19C12 19 12.5 18.5 12.5 17.5V1.5H15.5C15.5 3 17 4.5 19 4.5V8.5Z"
+                                          fill="url(#tiktokGradient)"
+                                          stroke="url(#tiktokGradient)"
+                                          stroke-width="0.5"/>
+                                    <!-- Cyan outline effect -->
+                                    <path d="M19 8.5C17.5 8.5 16 7.5 15.5 6V18C15.5 20.5 13.5 22.5 11 22.5C8.5 22.5 6.5 20.5 6.5 18C6.5 15.5 8.5 13.5 11 13.5V16C10 16 9.5 16.5 9.5 17.5C9.5 18.5 10 19 11 19C12 19 12.5 18.5 12.5 17.5V1.5H15.5C15.5 3 17 4.5 19 4.5V8.5Z"
+                                          fill="none"
+                                          stroke="#25F4EE"
+                                          stroke-width="1"
+                                          opacity="0.6"
+                                          transform="translate(-0.5, -0.5)"/>
+                                    <!-- Pink shadow effect -->
+                                    <path d="M19 8.5C17.5 8.5 16 7.5 15.5 6V18C15.5 20.5 13.5 22.5 11 22.5C8.5 22.5 6.5 20.5 6.5 18C6.5 15.5 8.5 13.5 11 13.5V16C10 16 9.5 16.5 9.5 17.5C9.5 18.5 10 19 11 19C12 19 12.5 18.5 12.5 17.5V1.5H15.5C15.5 3 17 4.5 19 4.5V8.5Z"
+                                          fill="none"
+                                          stroke="#FE2C55"
+                                          stroke-width="1"
+                                          opacity="0.6"
+                                          transform="translate(0.5, 0.5)"/>
                                 </svg>
                                 TikTok Video • 9:16 • 1080×1920px
                             </span>
@@ -1163,6 +1764,12 @@
                 if (section) {
                     section.classList.add('active');
                     AppState.currentView = sectionName;
+
+                    // Smooth scroll to top
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
                 } else {
                     console.error(`❌ Secção ${sectionName} não encontrada`);
                 }
@@ -1650,6 +2257,35 @@
             }
         };
 
+        // ==================== RIPPLE EFFECT ====================
+        const RippleEffect = {
+            init() {
+                document.querySelectorAll('.glass-button').forEach(button => {
+                    button.addEventListener('click', (e) => this.createRipple(e, button));
+                });
+            },
+
+            createRipple(event, button) {
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple-effect');
+
+                const rect = button.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = event.clientX - rect.left - size / 2;
+                const y = event.clientY - rect.top - size / 2;
+
+                ripple.style.width = ripple.style.height = `${size}px`;
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+
+                button.appendChild(ripple);
+
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            }
+        };
+
         // ==================== INICIALIZAÇÃO ====================
         document.addEventListener('DOMContentLoaded', () => {
             console.log('═══════════════════════════════════════');
@@ -1661,9 +2297,10 @@
             console.log('📏 Tamanho máximo:', (CONFIG.maxFileSize / 1024 / 1024), 'MB');
             console.log('⏱️ Timeout:', (CONFIG.requestTimeout / 1000), 'segundos');
             console.log('📱 Formatos: Instagram + TikTok com ícones SVG');
-            console.log('🎨 Design: Glass Morphism + Social Media Icons');
+            console.log('🎨 Design: Glass Morphism + Social Media Icons + Ripple Effect');
             console.log('═══════════════════════════════════════');
             Events.init();
+            RippleEffect.init();
         });
     </script>
 </body>
