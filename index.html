@@ -231,31 +231,16 @@
             animation: fadeInDown 1s ease-out;
         }
 
-        .aperture-icon {
-            width: 70px;
-            height: 70px;
+        .camera-icon {
+            width: 60px;
+            height: 60px;
             animation: glow 3s ease-in-out infinite;
             filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.4));
         }
 
-        .aperture-icon .blade {
+        .camera-icon .lens {
+            animation: rotateGear 20s linear infinite;
             transform-origin: center;
-            animation: apertureOpen 4s ease-in-out infinite;
-        }
-
-        @keyframes apertureOpen {
-            0%, 100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-            50% {
-                transform: scale(0.85);
-                opacity: 0.9;
-            }
-        }
-
-        .aperture-icon .center-ring {
-            animation: pulse 3s ease-in-out infinite;
         }
 
         header h1 {
@@ -562,96 +547,27 @@
 
         /* Variações de cor dos botões */
         .glass-button.btn-primary {
-            background: linear-gradient(135deg,
-                oklch(from var(--accent-color) l c h / 85%),
-                oklch(from var(--accent-light) l c h / 95%),
-                oklch(from var(--color-chart-1) l c h / 80%)
-            );
-            background-size: 200% 200%;
-            animation: gradientShift 8s ease infinite;
-            box-shadow:
-                inset 0 0.125em 0.125em oklch(from var(--foreground) l c h / 5%),
-                inset 0 -0.125em 0.125em oklch(from var(--background) l c h / 50%),
-                0 0.25em 0.125em -0.125em oklch(from var(--accent-color) l c h / 30%),
-                0 0 0.1em 0.25em inset oklch(from var(--accent-color) l c h / 20%),
-                0 0 20px oklch(from var(--accent-color) l c h / 20%);
-        }
-
-        .glass-button.btn-primary:hover {
-            background: linear-gradient(135deg,
+            background: linear-gradient(-75deg,
+                oklch(from var(--accent-color) l c h / 70%),
                 oklch(from var(--accent-color) l c h / 90%),
-                oklch(from var(--accent-light) l c h / 100%),
-                oklch(from var(--color-chart-1) l c h / 85%)
+                oklch(from var(--accent-color) l c h / 70%)
             );
-            box-shadow:
-                inset 0 0.125em 0.125em oklch(from var(--foreground) l c h / 8%),
-                inset 0 -0.125em 0.125em oklch(from var(--background) l c h / 50%),
-                0 0.35em 0.15em -0.1em oklch(from var(--accent-color) l c h / 40%),
-                0 0 0.1em 0.3em inset oklch(from var(--accent-color) l c h / 30%),
-                0 0 30px oklch(from var(--accent-color) l c h / 30%);
-        }
-
-        @keyframes gradientShift {
-            0%, 100% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
         }
 
         .glass-button.btn-success {
-            background: linear-gradient(135deg,
-                oklch(from var(--success-color) l c h / 80%),
-                oklch(from var(--success-color) l c h / 95%),
-                oklch(from var(--success-color) l c h / 75%)
+            background: linear-gradient(-75deg,
+                oklch(from var(--success-color) l c h / 70%),
+                oklch(from var(--success-color) l c h / 90%),
+                oklch(from var(--success-color) l c h / 70%)
             );
-            box-shadow:
-                inset 0 0.125em 0.125em oklch(from var(--foreground) l c h / 5%),
-                inset 0 -0.125em 0.125em oklch(from var(--background) l c h / 50%),
-                0 0.25em 0.125em -0.125em oklch(from var(--success-color) l c h / 25%),
-                0 0 0.1em 0.25em inset oklch(from var(--success-color) l c h / 15%),
-                0 0 15px oklch(from var(--success-color) l c h / 15%);
         }
 
         .glass-button.btn-secondary {
-            background: linear-gradient(135deg,
-                oklch(from var(--bg-tertiary) l c h / 60%),
-                oklch(from var(--bg-quaternary) l c h / 80%),
-                oklch(from var(--bg-tertiary) l c h / 55%)
+            background: linear-gradient(-75deg,
+                oklch(from var(--bg-tertiary) l c h / 50%),
+                oklch(from var(--bg-quaternary) l c h / 70%),
+                oklch(from var(--bg-tertiary) l c h / 50%)
             );
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .glass-button.btn-secondary:hover {
-            background: linear-gradient(135deg,
-                oklch(from var(--bg-tertiary) l c h / 70%),
-                oklch(from var(--bg-quaternary) l c h / 90%),
-                oklch(from var(--bg-tertiary) l c h / 65%)
-            );
-            border-color: rgba(255, 255, 255, 0.15);
-            box-shadow:
-                inset 0 0.125em 0.125em oklch(from var(--foreground) l c h / 5%),
-                inset 0 -0.125em 0.125em oklch(from var(--background) l c h / 50%),
-                0 0.25em 0.15em -0.1em oklch(from var(--foreground) l c h / 20%),
-                0 0 0.1em 0.2em inset oklch(from var(--foreground) l c h / 10%),
-                0 0 15px rgba(255, 255, 255, 0.1);
-        }
-
-        /* ==================== BUTTON ICONS (SVG) ==================== */
-        .button-icon {
-            width: 20px;
-            height: 20px;
-            flex-shrink: 0;
-            display: inline-flex;
-            vertical-align: middle;
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .glass-button:hover .button-icon {
-            filter: drop-shadow(0 4px 8px rgba(255, 255, 255, 0.3));
-            transform: scale(1.1);
         }
 
         /* ==================== SOCIAL MEDIA ICONS (SVG) ==================== */
@@ -1427,64 +1343,66 @@
         <!-- HEADER -->
         <header>
             <div class="header-icon-wrapper">
-                <svg class="aperture-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg class="camera-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Camera Body -->
+                    <rect x="8" y="20" width="48" height="32" rx="6" fill="url(#cameraGradient)" stroke="url(#cameraBorder)" stroke-width="2"/>
+
+                    <!-- Top viewfinder -->
+                    <rect x="20" y="14" width="24" height="8" rx="2" fill="url(#viewfinderGradient)"/>
+
+                    <!-- Lens outer ring -->
+                    <circle cx="32" cy="36" r="12" fill="url(#lensOuterGradient)" stroke="url(#cameraBorder)" stroke-width="1.5"/>
+
+                    <!-- Lens middle ring -->
+                    <circle cx="32" cy="36" r="9" class="lens" fill="url(#lensMidGradient)" opacity="0.8"/>
+
+                    <!-- Lens inner glass -->
+                    <circle cx="32" cy="36" r="6" fill="url(#lensInnerGradient)"/>
+
+                    <!-- Glass reflection -->
+                    <ellipse cx="29" cy="33" rx="3" ry="2.5" fill="rgba(255,255,255,0.4)"/>
+
+                    <!-- Flash -->
+                    <circle cx="48" cy="26" r="3" fill="#FCD34D" opacity="0.9">
+                        <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+
+                    <!-- Shutter button -->
+                    <circle cx="50" cy="38" r="2.5" fill="url(#buttonGradient)"/>
+
+                    <!-- Gradients -->
                     <defs>
-                        <!-- Gradients -->
-                        <linearGradient id="apertureGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <linearGradient id="cameraGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
                             <stop offset="50%" style="stop-color:#818cf8;stop-opacity:1" />
                             <stop offset="100%" style="stop-color:#a5b4fc;stop-opacity:1" />
                         </linearGradient>
-                        <linearGradient id="apertureGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#34d399;stop-opacity:1" />
+                        <linearGradient id="cameraBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#c7d2fe;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#e0e7ff;stop-opacity:1" />
                         </linearGradient>
-                        <radialGradient id="apertureCenterGlow">
-                            <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.8" />
-                            <stop offset="50%" style="stop-color:#a5b4fc;stop-opacity:0.4" />
-                            <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0.1" />
+                        <linearGradient id="viewfinderGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
+                        </linearGradient>
+                        <radialGradient id="lensOuterGradient">
+                            <stop offset="0%" style="stop-color:#1e293b;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
                         </radialGradient>
+                        <radialGradient id="lensMidGradient">
+                            <stop offset="0%" style="stop-color:#334155;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+                        </radialGradient>
+                        <radialGradient id="lensInnerGradient">
+                            <stop offset="0%" style="stop-color:#10b981;stop-opacity:0.4" />
+                            <stop offset="50%" style="stop-color:#059669;stop-opacity:0.6" />
+                            <stop offset="100%" style="stop-color:#047857;stop-opacity:0.8" />
+                        </radialGradient>
+                        <linearGradient id="buttonGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ef4444;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#dc2626;stop-opacity:1" />
+                        </linearGradient>
                     </defs>
-
-                    <!-- Outer ring -->
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="url(#apertureGradient1)" stroke-width="2.5" opacity="0.6"/>
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="url(#apertureGradient1)" stroke-width="1.5" opacity="0.8"/>
-
-                    <!-- Aperture blades (8 blades forming hexagon-like shape) -->
-                    <g class="blade">
-                        <!-- Blade 1 -->
-                        <path d="M 50 15 L 65 35 L 50 35 Z" fill="url(#apertureGradient1)" opacity="0.9"/>
-                        <!-- Blade 2 -->
-                        <path d="M 65 35 L 75 50 L 65 50 Z" fill="url(#apertureGradient1)" opacity="0.85"/>
-                        <!-- Blade 3 -->
-                        <path d="M 75 50 L 65 65 L 65 50 Z" fill="url(#apertureGradient1)" opacity="0.9"/>
-                        <!-- Blade 4 -->
-                        <path d="M 65 65 L 50 85 L 50 65 Z" fill="url(#apertureGradient1)" opacity="0.85"/>
-                        <!-- Blade 5 -->
-                        <path d="M 50 85 L 35 65 L 50 65 Z" fill="url(#apertureGradient1)" opacity="0.9"/>
-                        <!-- Blade 6 -->
-                        <path d="M 35 65 L 25 50 L 35 50 Z" fill="url(#apertureGradient1)" opacity="0.85"/>
-                        <!-- Blade 7 -->
-                        <path d="M 25 50 L 35 35 L 35 50 Z" fill="url(#apertureGradient1)" opacity="0.9"/>
-                        <!-- Blade 8 -->
-                        <path d="M 35 35 L 50 15 L 50 35 Z" fill="url(#apertureGradient1)" opacity="0.85"/>
-                    </g>
-
-                    <!-- Center opening with glow -->
-                    <circle cx="50" cy="50" r="18" fill="url(#apertureCenterGlow)" class="center-ring"/>
-                    <circle cx="50" cy="50" r="15" fill="none" stroke="url(#apertureGradient2)" stroke-width="2"/>
-                    <circle cx="50" cy="50" r="8" fill="url(#apertureGradient2)" opacity="0.6"/>
-
-                    <!-- Center dot -->
-                    <circle cx="50" cy="50" r="3" fill="#ffffff" opacity="0.9">
-                        <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
-                    </circle>
-
-                    <!-- Decorative corner marks -->
-                    <path d="M 10 10 L 15 10 L 15 15" stroke="url(#apertureGradient2)" stroke-width="2" fill="none" opacity="0.5"/>
-                    <path d="M 90 10 L 85 10 L 85 15" stroke="url(#apertureGradient2)" stroke-width="2" fill="none" opacity="0.5"/>
-                    <path d="M 10 90 L 15 90 L 15 85" stroke="url(#apertureGradient2)" stroke-width="2" fill="none" opacity="0.5"/>
-                    <path d="M 90 90 L 85 90 L 85 85" stroke="url(#apertureGradient2)" stroke-width="2" fill="none" opacity="0.5"/>
                 </svg>
             </div>
             <h1>O fotografo</h1>
@@ -1496,83 +1414,65 @@
             <div id="drop-zone">
                 <div class="upload-icon-wrapper">
                     <svg class="upload-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Cloud -->
+                        <g class="cloud-part">
+                            <path d="M73 50C73 47.5 71.5 45.5 69.5 44.5C69.5 37 63.5 31 56 31C51.5 31 47.5 33.5 45.5 37C44.5 36.5 43.5 36.5 42.5 36.5C37.5 36.5 33.5 40.5 33.5 45.5C29.5 46.5 26.5 50 26.5 54.5C26.5 59.5 30.5 63.5 35.5 63.5H68.5C72.5 63.5 75.5 60.5 75.5 56.5C75.5 53 73 50 73 50Z"
+                                  fill="url(#cloudGradient)"
+                                  stroke="url(#cloudBorder)"
+                                  stroke-width="1.5"
+                                  stroke-linejoin="round"/>
+                        </g>
+
+                        <!-- Upload Arrow -->
+                        <g class="arrow-part">
+                            <!-- Arrow shaft -->
+                            <rect x="47" y="45" width="6" height="30" rx="2" fill="url(#arrowGradient)"/>
+
+                            <!-- Arrow head -->
+                            <path d="M50 35 L40 45 L45 45 L45 50 L55 50 L55 45 L60 45 Z"
+                                  fill="url(#arrowHeadGradient)"
+                                  stroke="rgba(255,255,255,0.2)"
+                                  stroke-width="1"/>
+
+                            <!-- Sparkles -->
+                            <circle cx="35" cy="48" r="2" fill="#FCD34D" opacity="0.8">
+                                <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="65" cy="52" r="2" fill="#A5B4FC" opacity="0.8">
+                                <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                            </circle>
+                            <circle cx="42" cy="60" r="1.5" fill="#10B981" opacity="0.8">
+                                <animate attributeName="opacity" values="0.3;1;0.3" dur="1.8s" repeatCount="indefinite" begin="0.3s"/>
+                            </circle>
+                        </g>
+
+                        <!-- Gradients -->
                         <defs>
-                            <!-- Gradients -->
-                            <linearGradient id="frameGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#818cf8;stop-opacity:1" />
+                            <linearGradient id="cloudGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0.8" />
+                                <stop offset="50%" style="stop-color:#818cf8;stop-opacity:0.9" />
+                                <stop offset="100%" style="stop-color:#a5b4fc;stop-opacity:0.8" />
                             </linearGradient>
-                            <linearGradient id="imageGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#a5b4fc;stop-opacity:0.3" />
-                                <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0.5" />
+                            <linearGradient id="cloudBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#c7d2fe;stop-opacity:0.6" />
+                                <stop offset="100%" style="stop-color:#e0e7ff;stop-opacity:0.8" />
                             </linearGradient>
-                            <linearGradient id="plusGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <linearGradient id="arrowGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#e0e7ff;stop-opacity:0.9" />
+                            </linearGradient>
+                            <linearGradient id="arrowHeadGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                                 <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#34d399;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
                             </linearGradient>
                         </defs>
-
-                        <!-- Main photo frame (polaroid style) -->
-                        <g class="cloud-part">
-                            <rect x="15" y="15" width="70" height="70" rx="4" fill="url(#frameGradient)" opacity="0.2"/>
-                            <rect x="15" y="15" width="70" height="70" rx="4" fill="none" stroke="url(#frameGradient)" stroke-width="2.5"/>
-
-                            <!-- Image placeholder area -->
-                            <rect x="20" y="20" width="60" height="50" rx="2" fill="url(#imageGradient)"/>
-
-                            <!-- Mountain/landscape icon inside -->
-                            <path d="M 30 60 L 45 45 L 55 55 L 70 40 L 75 45 L 75 65 L 25 65 Z"
-                                  fill="url(#frameGradient)" opacity="0.5"/>
-
-                            <!-- Sun/circle in corner -->
-                            <circle cx="68" cy="28" r="5" fill="url(#plusGradient)" opacity="0.6"/>
-
-                            <!-- Corner markers (focus frame) -->
-                            <path d="M 18 18 L 25 18 M 18 18 L 18 25" stroke="url(#plusGradient)" stroke-width="2" opacity="0.8"/>
-                            <path d="M 82 18 L 75 18 M 82 18 L 82 25" stroke="url(#plusGradient)" stroke-width="2" opacity="0.8"/>
-                            <path d="M 18 82 L 25 82 M 18 82 L 18 75" stroke="url(#plusGradient)" stroke-width="2" opacity="0.8"/>
-                            <path d="M 82 82 L 75 82 M 82 82 L 82 75" stroke="url(#plusGradient)" stroke-width="2" opacity="0.8"/>
-                        </g>
-
-                        <!-- Upload indicator (plus sign in circle) -->
-                        <g class="arrow-part">
-                            <circle cx="75" cy="75" r="15" fill="url(#plusGradient)" opacity="0.9"/>
-                            <circle cx="75" cy="75" r="15" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.5"/>
-
-                            <!-- Plus icon -->
-                            <line x1="75" y1="68" x2="75" y2="82" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
-                            <line x1="68" y1="75" x2="82" y2="75" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
-                        </g>
-
-                        <!-- Sparkles around frame -->
-                        <circle cx="12" cy="30" r="2" fill="#FCD34D" opacity="0.8">
-                            <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="88" cy="50" r="2.5" fill="#A5B4FC" opacity="0.8">
-                            <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" begin="0.5s"/>
-                        </circle>
-                        <circle cx="30" cy="10" r="1.5" fill="#10B981" opacity="0.8">
-                            <animate attributeName="opacity" values="0.3;1;0.3" dur="1.8s" repeatCount="indefinite" begin="0.3s"/>
-                        </circle>
-                        <circle cx="90" cy="20" r="1.8" fill="#818cf8" opacity="0.8">
-                            <animate attributeName="opacity" values="0.3;1;0.3" dur="2.2s" repeatCount="indefinite" begin="0.7s"/>
-                        </circle>
                     </svg>
                 </div>
                 <h2>Arraste a sua foto aqui</h2>
                 <p>ou clique para selecionar um ficheiro</p>
                 <div class="glass-button-wrap">
                     <button class="glass-button btn-primary" onclick="document.getElementById('file-input').click()">
-                        <span class="glass-button-text">
-                            <svg class="button-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <!-- Gallery/Images icon -->
-                                <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
-                                <rect x="6" y="11" width="12" height="9" rx="1" fill="currentColor" opacity="0.3"/>
-                                <path d="M 6 20 L 10 15 L 13 18 L 18 12 L 18 20 Z" fill="currentColor" opacity="0.6"/>
-                                <circle cx="15" cy="8" r="1.5" fill="currentColor"/>
-                            </svg>
-                            Escolher Ficheiro
-                        </span>
+                        <span class="glass-button-text">Escolher Ficheiro</span>
                     </button>
                     <div class="glass-button-shadow"></div>
                 </div>
@@ -1594,35 +1494,13 @@
             <div class="actions">
                 <div class="glass-button-wrap">
                     <button class="glass-button btn-secondary" id="btn-cancel">
-                        <span class="glass-button-text">
-                            <svg class="button-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <!-- Cancel/Close icon (lens closing) -->
-                                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/>
-                                <line x1="8" y1="8" x2="16" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                <line x1="16" y1="8" x2="8" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            </svg>
-                            Cancelar
-                        </span>
+                        <span class="glass-button-text">Cancelar</span>
                     </button>
                     <div class="glass-button-shadow"></div>
                 </div>
                 <div class="glass-button-wrap">
                     <button class="glass-button btn-primary" id="btn-send">
-                        <span class="glass-button-text">
-                            <svg class="button-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <!-- Adjust/Sliders icon -->
-                                <line x1="4" y1="7" x2="10" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                <circle cx="13" cy="7" r="2" stroke="currentColor" stroke-width="2" fill="currentColor" opacity="0.5"/>
-                                <line x1="16" y1="7" x2="20" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                <line x1="4" y1="12" x2="7" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                <circle cx="10" cy="12" r="2" stroke="currentColor" stroke-width="2" fill="currentColor" opacity="0.5"/>
-                                <line x1="13" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                <line x1="4" y1="17" x2="13" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                <circle cx="16" cy="17" r="2" stroke="currentColor" stroke-width="2" fill="currentColor" opacity="0.5"/>
-                                <line x1="19" y1="17" x2="20" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            </svg>
-                            Enviar para Edição
-                        </span>
+                        <span class="glass-button-text">Enviar para Edição</span>
                     </button>
                     <div class="glass-button-shadow"></div>
                 </div>
@@ -1815,13 +1693,7 @@
                 <div class="glass-button-wrap">
                     <button class="glass-button btn-secondary" id="btn-download">
                         <span class="glass-button-text">
-                            <svg class="button-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <!-- Download image icon -->
-                                <rect x="4" y="4" width="16" height="14" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
-                                <path d="M 6 18 L 10 13 L 13 16 L 18 10" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                                <circle cx="16" cy="7" r="1.5" fill="currentColor"/>
-                                <path d="M 12 22 L 12 16 M 9 19 L 12 22 L 15 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
+                            <span>💾</span>
                             <span id="download-text">Download da Imagem Editada</span>
                         </span>
                     </button>
@@ -1830,15 +1702,8 @@
                 <div class="glass-button-wrap">
                     <button class="glass-button btn-secondary" id="btn-new">
                         <span class="glass-button-text">
-                            <svg class="button-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <!-- New photo/camera plus icon -->
-                                <rect x="4" y="7" width="16" height="13" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
-                                <rect x="7" y="4" width="10" height="4" rx="1" fill="currentColor" opacity="0.4"/>
-                                <circle cx="12" cy="13.5" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
-                                <line x1="12" y1="2" x2="12" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                <line x1="10.5" y1="3.5" x2="13.5" y2="3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            </svg>
-                            Nova Foto
+                            <span>🔄</span>
+                            <span>Nova Foto</span>
                         </span>
                     </button>
                     <div class="glass-button-shadow"></div>
@@ -1853,15 +1718,7 @@
                 <p id="error-text"></p>
                 <div class="glass-button-wrap">
                     <button class="glass-button btn-primary" id="btn-retry">
-                        <span class="glass-button-text">
-                            <svg class="button-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <!-- Refresh/Retry with lens icon -->
-                                <path d="M 20 12 A 8 8 0 1 1 12 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-                                <path d="M 17 4 L 20 7 L 17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5" fill="currentColor" opacity="0.3"/>
-                            </svg>
-                            Tentar Novamente
-                        </span>
+                        <span class="glass-button-text">Tentar Novamente</span>
                     </button>
                     <div class="glass-button-shadow"></div>
                 </div>
