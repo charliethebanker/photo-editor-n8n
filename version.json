@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "build": "2025-10-21T08:15:00Z",
+  "commit": "6f4d443",
+  "features": [
+    "Next.js 14 with React 18",
+    "TypeScript support",
+    "Framer Motion animations",
+    "Webhook n8n integration",
+    "Before/After comparison slider",
+    "Social media format selector",
+    "Glass morphism design",
+    "Photography-themed icons"
+  ]
+}
