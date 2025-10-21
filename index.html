@@ -934,83 +934,133 @@
             animation: breathe 2s ease-in-out infinite 1s;
         }
 
-        .comparison {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
+        /* Slider de Comparação Interativo */
+        .comparison-slider-container {
             margin-bottom: 2rem;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .image-box {
-            background: rgba(26, 26, 26, 0.4);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 24px;
-            padding: 1.5rem;
-            box-shadow:
-                inset 0 1px 1px rgba(255, 255, 255, 0.05),
-                0 8px 32px rgba(0, 0, 0, 0.4);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        .comparison-slider {
             position: relative;
+            width: 100%;
             overflow: hidden;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            cursor: ew-resize;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
-        .image-box::before {
-            content: '';
+        .slider-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            pointer-events: none;
+        }
+
+        .slider-image-after {
+            position: relative;
+            z-index: 1;
+        }
+
+        .slider-image-before-wrapper {
             position: absolute;
             top: 0;
-            left: -100%;
+            left: 0;
+            width: 50%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        .slider-image-before {
+            width: auto;
+            height: 100%;
+            max-width: none;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .slider-handle {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 4px;
+            height: 100%;
+            z-index: 3;
+            transform: translateX(-50%);
+            cursor: ew-resize;
+        }
+
+        .slider-line {
             width: 100%;
             height: 100%;
             background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(99, 102, 241, 0.1),
-                transparent
+                180deg,
+                rgba(99, 102, 241, 0.8),
+                rgba(99, 102, 241, 1),
+                rgba(99, 102, 241, 0.8)
             );
-            transition: left 0.5s ease;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
         }
 
-        .image-box:hover::before {
-            left: 100%;
-        }
-
-        .image-box:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow:
-                inset 0 1px 1px rgba(255, 255, 255, 0.08),
-                0 16px 48px rgba(99, 102, 241, 0.2),
-                0 0 0 1px rgba(99, 102, 241, 0.1);
-            border-color: rgba(99, 102, 241, 0.3);
-        }
-
-        .image-box h3 {
-            margin-bottom: 1rem;
-            text-align: center;
-            background: linear-gradient(135deg, var(--accent-light), var(--color-chart-1));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-size: 1.25rem;
-        }
-
-        .image-box .image-wrapper {
-            width: 100%;
-            border-radius: 16px;
-            overflow: hidden;
-            background: rgba(37, 37, 37, 0.6);
+        .slider-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 48px;
+            height: 48px;
+            background: var(--accent-color);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 300px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow:
+                0 4px 12px rgba(0, 0, 0, 0.3),
+                0 0 0 4px rgba(255, 255, 255, 0.1),
+                inset 0 1px 2px rgba(255, 255, 255, 0.2);
+            cursor: ew-resize;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .image-box img {
-            max-width: 100%;
-            height: auto;
-            display: block;
+        .slider-button:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow:
+                0 6px 16px rgba(99, 102, 241, 0.4),
+                0 0 0 4px rgba(255, 255, 255, 0.15),
+                inset 0 1px 2px rgba(255, 255, 255, 0.3);
+        }
+
+        .slider-button:active {
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+
+        .slider-label {
+            position: absolute;
+            top: 1rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 12px;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 600;
+            z-index: 4;
+            pointer-events: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .slider-label-before {
+            left: 1rem;
+        }
+
+        .slider-label-after {
+            right: 1rem;
         }
 
         /* ==================== FORMAT PANEL ==================== */
@@ -1177,10 +1227,6 @@
 
             .upload-icon {
                 font-size: 3rem;
-            }
-
-            .comparison {
-                grid-template-columns: 1fr;
             }
 
             .format-grid {
@@ -1523,19 +1569,31 @@
         <section id="result-section">
             <h2 class="text-center" style="font-size: 2rem; margin-bottom: 1rem;">Resultado</h2>
 
-            <!-- Imagens lado a lado -->
-            <div class="comparison">
-                <div class="image-box">
-                    <h3>Original</h3>
-                    <div class="image-wrapper">
-                        <img id="result-original" alt="Imagem original">
+            <!-- Slider de Comparação Interativo -->
+            <div class="comparison-slider-container">
+                <div class="comparison-slider">
+                    <!-- Imagem editada (background) -->
+                    <img id="result-edited" class="slider-image slider-image-after" alt="Imagem editada">
+
+                    <!-- Imagem original (foreground com clip) -->
+                    <div class="slider-image-before-wrapper" id="slider-wrapper">
+                        <img id="result-original" class="slider-image slider-image-before" alt="Imagem original">
                     </div>
-                </div>
-                <div class="image-box">
-                    <h3>Editada</h3>
-                    <div class="image-wrapper">
-                        <img id="result-edited" alt="Imagem editada">
+
+                    <!-- Linha divisória arrastável -->
+                    <div class="slider-handle" id="slider-handle">
+                        <div class="slider-line"></div>
+                        <div class="slider-button">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M15 18L9 12L15 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M9 18L15 12L9 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
                     </div>
+
+                    <!-- Labels -->
+                    <div class="slider-label slider-label-before">Original</div>
+                    <div class="slider-label slider-label-after">Editada</div>
                 </div>
             </div>
 
@@ -2287,6 +2345,78 @@
         };
 
         // ==================== INICIALIZAÇÃO ====================
+        // ==================== COMPARISON SLIDER ====================
+        const ComparisonSlider = {
+            init() {
+                const slider = document.querySelector('.comparison-slider');
+                const handle = document.getElementById('slider-handle');
+                const wrapper = document.getElementById('slider-wrapper');
+
+                if (!slider || !handle || !wrapper) return;
+
+                let isDragging = false;
+
+                const updateSlider = (clientX) => {
+                    const rect = slider.getBoundingClientRect();
+                    let offsetX = clientX - rect.left;
+
+                    // Limitar entre 0 e largura total
+                    offsetX = Math.max(0, Math.min(offsetX, rect.width));
+
+                    const percentage = (offsetX / rect.width) * 100;
+
+                    wrapper.style.width = percentage + '%';
+                    handle.style.left = percentage + '%';
+                };
+
+                // Mouse events
+                handle.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    e.preventDefault();
+                });
+
+                slider.addEventListener('mousedown', (e) => {
+                    if (e.target === slider || e.target.closest('.slider-image-after')) {
+                        updateSlider(e.clientX);
+                    }
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging) {
+                        updateSlider(e.clientX);
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                });
+
+                // Touch events
+                handle.addEventListener('touchstart', (e) => {
+                    isDragging = true;
+                    e.preventDefault();
+                });
+
+                slider.addEventListener('touchstart', (e) => {
+                    if (e.target === slider || e.target.closest('.slider-image-after')) {
+                        updateSlider(e.touches[0].clientX);
+                    }
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (isDragging) {
+                        updateSlider(e.touches[0].clientX);
+                    }
+                });
+
+                document.addEventListener('touchend', () => {
+                    isDragging = false;
+                });
+
+                console.log('🎚️ Slider de comparação inicializado');
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             console.log('═══════════════════════════════════════');
             console.log('  O fotografo - Editor de Fotografias  ');
@@ -2297,10 +2427,11 @@
             console.log('📏 Tamanho máximo:', (CONFIG.maxFileSize / 1024 / 1024), 'MB');
             console.log('⏱️ Timeout:', (CONFIG.requestTimeout / 1000), 'segundos');
             console.log('📱 Formatos: Instagram + TikTok com ícones SVG');
-            console.log('🎨 Design: Glass Morphism + Social Media Icons + Ripple Effect');
+            console.log('🎨 Design: Glass Morphism + Social Media Icons + Ripple Effect + Slider Interativo');
             console.log('═══════════════════════════════════════');
             Events.init();
             RippleEffect.init();
+            ComparisonSlider.init();
         });
     </script>
 </body>
