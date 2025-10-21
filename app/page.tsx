@@ -40,40 +40,87 @@ export default function Home() {
     setCurrentView('loading')
 
     try {
+      console.log('📤 Enviando para webhook:', selectedFile.name)
+      console.log('📁 Tamanho:', (selectedFile.size / 1024).toFixed(2), 'KB')
+
       // Create FormData for webhook
       const formData = new FormData()
       formData.append('file', selectedFile)
+      formData.append('filename', selectedFile.name)
+      formData.append('mimeType', selectedFile.type)
 
       // Get original image URL for comparison
       const originalUrl = URL.createObjectURL(selectedFile)
 
-      // TODO: Replace with actual webhook URL from environment variable
-      const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || '/api/process'
+      // Webhook URL from environment or default
+      const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || 'https://olancador.pt/webhook/fotografo'
+
+      // Create abort controller for timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 120000) // 120 seconds
 
       // Call n8n webhook
       const response = await fetch(webhookUrl, {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       })
 
+      clearTimeout(timeoutId)
+
+      console.log('📡 Status:', response.status, response.statusText)
+
       if (!response.ok) {
-        throw new Error(`Erro no servidor: ${response.status}`)
+        const errorText = await response.text()
+        console.error('❌ Erro do servidor:', errorText)
+        throw new Error(`Erro ${response.status}: ${response.statusText}`)
       }
 
-      const result = await response.json()
+      // Handle different response types
+      const contentType = response.headers.get('content-type')
+      console.log('📄 Content-Type:', contentType)
+
+      let result: any
+      if (contentType && contentType.includes('application/json')) {
+        result = await response.json()
+      } else {
+        const text = await response.text()
+        console.log('📝 Resposta (texto):', text.substring(0, 200))
+        result = { editedImage: text }
+      }
+
+      console.log('✅ Resposta do webhook recebida')
+
+      // Check for valid response
+      if (!result.editedImage && !result.image) {
+        throw new Error('Resposta inválida do servidor. Imagem processada não encontrada.')
+      }
 
       // Set image data for result view
+      const processedImageUrl = result.editedImage || result.image
+
       setImageData({
         original: originalUrl,
-        processed: result.processedImageUrl || originalUrl, // Fallback to original if no processed image
+        processed: processedImageUrl,
       })
 
       setCurrentView('result')
     } catch (error) {
-      console.error('Error processing image:', error)
-      setErrorMessage(
-        error instanceof Error ? error.message : 'Falha ao processar a imagem. Tente novamente.'
-      )
+      console.error('❌ Erro no processamento:', error)
+
+      let errorMsg = 'Falha ao processar a imagem. Tente novamente.'
+
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          errorMsg = 'Tempo limite excedido. A imagem pode ser muito grande ou o servidor está lento.'
+        } else if (error.message.includes('Failed to fetch')) {
+          errorMsg = 'Erro de conexão. Verifique:\n• Webhook está ativo?\n• CORS configurado?\n• Internet funcional?'
+        } else {
+          errorMsg = error.message
+        }
+      }
+
+      setErrorMessage(errorMsg)
       setCurrentView('error')
     }
   }

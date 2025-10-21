@@ -2,15 +2,15 @@
 
 **Editor de fotografias automático via webhook n8n**
 
-Página web moderna para upload de fotografias, processamento automático através de workflow n8n e download da imagem editada.
+Aplicação moderna construída com Next.js, React e TypeScript para upload de fotografias, processamento automático através de workflow n8n e download da imagem editada com formatos otimizados para redes sociais.
 
-[![Deploy](https://img.shields.io/badge/deploy-live-brightgreen.svg)](https://photo-editor-n8n-mim1qdk3m-carlos-projects-e332b665.vercel.app)
+[![Deploy](https://img.shields.io/badge/deploy-live-brightgreen.svg)](https://charliethebanker.github.io/photo-editor-n8n/)
 ![Status](https://img.shields.io/badge/status-active-success.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ## 🌐 Aplicação Live
 
-**🔗 Aceder agora:** [https://photo-editor-n8n-mim1qdk3m-carlos-projects-e332b665.vercel.app](https://photo-editor-n8n-mim1qdk3m-carlos-projects-e332b665.vercel.app)
+**🔗 Aceder agora:** [https://charliethebanker.github.io/photo-editor-n8n/](https://charliethebanker.github.io/photo-editor-n8n/)
 
 ## 🌟 Funcionalidades
 
@@ -18,32 +18,83 @@ Página web moderna para upload de fotografias, processamento automático atrav�
 - ✅ **Validação Automática**: Máximo 10MB, formatos JPG/PNG/WEBP
 - ✅ **Preview Instantâneo**: Visualização da imagem antes do envio
 - ✅ **Processamento Automático**: Integração com workflow n8n
-- ✅ **Comparação Visual**: Lado-a-lado original vs editada
-- ✅ **Download Rápido**: Guardar imagem editada no computador
-- ✅ **Design Moderno**: Tema escuro e interface clean
+- ✅ **Comparação Interativa**: Slider antes/depois para comparar imagens
+- ✅ **Formatos para Redes Sociais**: Download otimizado para Instagram Post, Instagram Story, TikTok, Twitter
+- ✅ **Animações Suaves**: Transições elegantes com Framer Motion
+- ✅ **Design Moderno**: Glass morphism com tema fotografia consistente
 - ✅ **Totalmente Responsivo**: Funciona em desktop, tablet e mobile
 
 ## 🚀 Como Usar
 
-1. **Aceder à página**: [https://photo-editor-n8n-mim1qdk3m-carlos-projects-e332b665.vercel.app](https://photo-editor-n8n-mim1qdk3m-carlos-projects-e332b665.vercel.app)
-2. **Fazer upload**: Arrastar foto ou clicar para selecionar
-3. **Enviar**: Clicar no botão "Enviar para Edição"
-4. **Aguardar**: O workflow n8n processa a imagem
-5. **Comparar**: Ver original vs editada lado-a-lado
-6. **Download**: Guardar a imagem editada
+1. **Aceder à página**: [https://charliethebanker.github.io/photo-editor-n8n/](https://charliethebanker.github.io/photo-editor-n8n/)
+2. **Fazer upload**: Arrastar foto ou clicar para selecionar (máx 10MB)
+3. **Preview**: Visualizar imagem e confirmar envio
+4. **Processar**: Clicar em "Processar Imagem"
+5. **Aguardar**: O workflow n8n processa a imagem (até 120s)
+6. **Comparar**: Ver original vs editada com slider interativo
+7. **Escolher formato**: Selecionar formato desejado (Original, Instagram, TikTok, etc.)
+8. **Download**: Guardar a imagem editada no formato escolhido
 
 ## 🛠️ Tecnologias
 
-- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
+- **Next.js 14**: Framework React com App Router
+- **React 18**: Biblioteca UI
+- **TypeScript 5**: Type safety
+- **Tailwind CSS 3.4**: Estilização moderna
+- **Framer Motion 10**: Animações suaves
+- **GSAP 3.12**: Animações avançadas
 - **Backend**: Webhook n8n
-- **Hosting**: Vercel
-- **Deployment**: Auto-deploy via GitHub
+- **Hosting**: GitHub Pages
+- **CI/CD**: GitHub Actions
+
+## 📋 Instalação Local
+
+### Pré-requisitos
+
+- Node.js 20 ou superior
+- npm ou yarn
+- Webhook n8n configurado
+
+### Passos
+
+1. Clone o repositório:
+```bash
+git clone https://github.com/charliethebanker/photo-editor-n8n.git
+cd photo-editor-n8n
+```
+
+2. Instale as dependências:
+```bash
+npm install
+```
+
+3. Configure o webhook (opcional):
+```bash
+cp .env.example .env.local
+```
+
+Edite `.env.local` se quiser usar URL diferente:
+```env
+NEXT_PUBLIC_N8N_WEBHOOK_URL=https://seu-webhook.com/webhook/fotografo
+```
+
+4. Execute em desenvolvimento:
+```bash
+npm run dev
+```
+
+Acesse [http://localhost:3000](http://localhost:3000)
+
+5. Build para produção:
+```bash
+npm run build
+```
 
 ## 🔧 Configuração do Webhook n8n
 
 ### ⚠️ IMPORTANTE: Configuração CORS
 
-O webhook **DEVE** estar configurado para aceitar requests do domínio Vercel.
+O webhook **DEVE** estar configurado para aceitar requests do domínio GitHub Pages.
 
 ### Passo 1: Configurar o Webhook Node no n8n
 
@@ -66,13 +117,33 @@ O webhook **DEVE** estar configurado para aceitar requests do domínio Vercel.
    }
    ```
 
-### Passo 2: Configuração do n8n Server
+### Passo 2: Formato de Dados
+
+**A aplicação envia:**
+- Method: `POST`
+- Content-Type: `multipart/form-data`
+- Fields:
+  - `file`: O arquivo da imagem
+  - `filename`: Nome do arquivo
+  - `mimeType`: Tipo MIME (ex: image/jpeg)
+
+**O webhook deve retornar:**
+- Content-Type: `application/json` ou `text/plain`
+- Body:
+  ```json
+  {
+    "editedImage": "data:image/jpeg;base64,..." ou "https://url-da-imagem.jpg",
+    "image": "alternativa ao editedImage (fallback)"
+  }
+  ```
+
+### Passo 3: Configuração do n8n Server
 
 Se estiveres a usar n8n self-hosted, adiciona ao ficheiro `.env`:
 
 ```bash
 # Permitir CORS
-N8N_CORS_ORIGIN=https://photo-editor-n8n-mim1qdk3m-carlos-projects-e332b665.vercel.app
+N8N_CORS_ORIGIN=https://charliethebanker.github.io
 ```
 
 Ou para permitir qualquer origem (apenas desenvolvimento):
@@ -80,7 +151,7 @@ Ou para permitir qualquer origem (apenas desenvolvimento):
 N8N_CORS_ORIGIN=*
 ```
 
-### Passo 3: Estrutura do Workflow n8n
+### Passo 4: Estrutura do Workflow n8n
 
 **Exemplo de workflow básico:**
 
@@ -92,20 +163,9 @@ N8N_CORS_ORIGIN=*
 3. Respond to Webhook (retornar resultado)
 ```
 
-**Webhook recebe:**
-- FormData: `file`, `filename`, `mimeType`
+### Passo 5: Testar o Webhook
 
-**Deve retornar JSON:**
-```json
-{
-  "success": true,
-  "editedImage": "data:image/jpeg;base64,..." ou "https://url-da-imagem"
-}
-```
-
-### Passo 4: Testar o Webhook
-
-**Teste 1: Via cURL**
+**Via cURL:**
 ```bash
 curl -X POST https://olancador.pt/webhook/fotografo \
   -F "file=@test.jpg" \
@@ -113,7 +173,7 @@ curl -X POST https://olancador.pt/webhook/fotografo \
   -F "mimeType=image/jpeg"
 ```
 
-**Teste 2: Via Postman**
+**Via Postman:**
 1. Método: POST
 2. URL: https://olancador.pt/webhook/fotografo
 3. Body: form-data
@@ -126,86 +186,110 @@ curl -X POST https://olancador.pt/webhook/fotografo \
 **Problema:** O browser bloqueia o request por CORS.
 
 **Solução:**
-1. Verificar se n8n tem CORS configurado (ver acima)
+1. Verificar se n8n tem CORS configurado
 2. Adicionar response headers no Webhook Node
 3. Configurar `N8N_CORS_ORIGIN` no servidor n8n
 
-**Debug no Console (F12):**
+**Mensagem no Console (F12):**
 ```
-❌ Failed to fetch
-Access to fetch at 'https://olancador.pt/webhook/fotografo' 
-from origin 'https://photo-editor-n8n-...' has been blocked by CORS
+❌ Erro de conexão. Verifique:
+• Webhook está ativo?
+• CORS configurado?
+• Internet funcional?
 ```
+
+### "Tempo limite excedido"
+
+**Problema:** Processamento leva mais de 120 segundos.
+
+**Solução:**
+- Reduzir tamanho da imagem
+- Otimizar processamento no n8n
+- Verificar se n8n não está sobrecarregado
 
 ### Webhook não recebe dados
 
 **Verificar:**
 1. ✅ Webhook está ativo no n8n?
 2. ✅ URL está correta: `https://olancador.pt/webhook/fotografo`
-3. ✅ Workflow está em execução (não em teste)?
+3. ✅ Workflow está em produção (não apenas teste)?
 4. ✅ n8n tem acesso público à internet?
 
 **Debug:**
 - Verificar executions no n8n
-- Ver logs do servidor n8n
+- Ver logs do servidor n8n (F12 no navegador)
 - Testar webhook com cURL/Postman primeiro
 
-### "Ficheiro muito grande"
-
-**Solução:**
-- Comprimir imagem antes do upload
-- Máximo: 10MB
-- Ajustar limite se necessário no código
-
-### "Formato não suportado"
-
-**Solução:**
-- Usar apenas: JPG, PNG ou WEBP
-- Converter imagem se necessário
-
-## 📋 Estrutura do Projeto
+## 📁 Estrutura do Projeto
 
 ```
 photo-editor-n8n/
-├── index.html          # Página completa (HTML + CSS + JS)
-├── README.md          # Esta documentação
-└── CHANGELOG.md       # Histórico de alterações
+├── app/
+│   ├── globals.css          # Estilos globais Tailwind
+│   ├── layout.tsx            # Layout raiz com metadata
+│   └── page.tsx              # Página principal com lógica
+├── components/
+│   ├── icons/                # 8 ícones SVG customizados
+│   │   ├── ApertureIcon.tsx  # Ícone diafragma
+│   │   ├── FrameIcon.tsx     # Ícone moldura Polaroid
+│   │   ├── CameraIcon.tsx    # Ícone câmera
+│   │   ├── CancelIcon.tsx    # Ícone cancelar
+│   │   ├── SendIcon.tsx      # Ícone enviar
+│   │   ├── DownloadIcon.tsx  # Ícone download
+│   │   ├── GalleryIcon.tsx   # Ícone galeria
+│   │   └── RetryIcon.tsx     # Ícone retry
+│   ├── sections/             # 5 seções principais
+│   │   ├── UploadSection.tsx     # Upload com drag & drop
+│   │   ├── PreviewSection.tsx    # Preview da imagem
+│   │   ├── LoadingSection.tsx    # Spinner animado
+│   │   ├── ResultSection.tsx     # Comparação e download
+│   │   └── ErrorSection.tsx      # Tratamento de erros
+│   ├── ui/
+│   │   └── GlassButton.tsx       # Botão com glass morphism
+│   └── BackgroundGradient.tsx    # Background SVG animado
+├── public/
+│   └── .nojekyll             # Para GitHub Pages
+├── .github/
+│   └── workflows/
+│       └── deploy.yml        # CI/CD automático
+├── .env.example              # Exemplo de configuração
+├── .gitignore                # Arquivos ignorados
+├── next.config.js            # Config Next.js (static export)
+├── tailwind.config.ts        # Config Tailwind (cores custom)
+├── tsconfig.json             # Config TypeScript
+├── package.json              # Dependências
+└── README.md                 # Esta documentação
 ```
 
-## 📝 Desenvolvimento
+## 🎨 Design
 
-### Formato de Envio
+O design utiliza:
+- **Glass Morphism**: Efeitos de vidro translúcido com backdrop-filter
+- **Tema Fotografia Consistente**: 10 ícones SVG customizados (aperture, câmera, frame, etc.)
+- **Gradientes Animados**: Background com 3 camadas SVG animadas
+- **Animações Suaves**: Framer Motion para transições entre estados
+- **Ripple Effect**: Efeito de ondas nos botões ao clicar
+- **Slider Interativo**: Comparação antes/depois com controle deslizante
+- **Responsivo**: Grid adaptativo para desktop e mobile
 
-Por defeito usa **FormData**:
-```javascript
-const formData = new FormData();
-formData.append('file', file);
-formData.append('filename', file.name);
-formData.append('mimeType', file.type);
-```
+### Paleta de Cores
 
-Para usar **JSON/base64** (alternativo), alterar em `index.html`:
-```javascript
-CONFIG = {
-    ...
-    useFormData: false  // Mudar para false
+```typescript
+colors: {
+  background: '#0a0a0a',
+  primary: { DEFAULT: '#6366f1', hover: '#4f46e5', light: '#818cf8' },
+  accent: { DEFAULT: '#10b981', orange: '#f59e0b', purple: '#8b5cf6' }
 }
 ```
 
-### Validações Implementadas
+## 🔒 Segurança
 
-- **Tamanho**: Máximo 10MB
-- **Formatos**: JPEG, PNG, WEBP
-- **Tipo real**: Verificação de magic numbers
-- **MIME type**: Validação dupla
-
-### Estados da Interface
-
-1. **Upload**: Estado inicial com drag & drop
-2. **Preview**: Pré-visualização antes do envio
-3. **Loading**: Durante processamento n8n
-4. **Result**: Comparação das imagens
-5. **Error**: Tratamento de erros
+- ✅ Validação de tipos MIME reais (magic numbers)
+- ✅ Limitação de tamanho (10MB)
+- ✅ Timeout de requests (120 segundos)
+- ✅ Sanitização via FormData
+- ✅ CORS configurado
+- ✅ Sem armazenamento de imagens no frontend
 
 ## 📱 Compatibilidade
 
@@ -213,40 +297,31 @@ CONFIG = {
 - ✅ Firefox (últimas 2 versões)
 - ✅ Safari (últimas 2 versões)
 - ✅ Mobile Chrome/Safari
+- ✅ Progressive Web App ready
 
-## 🔒 Segurança
+## 🚀 Deploy Automático
 
-- Validação de tipos MIME reais (não apenas extensões)
-- Limitação de tamanho de ficheiro (10MB)
-- Sanitização de nomes de ficheiro
-- Timeout de requests (60 segundos)
+O projeto usa GitHub Actions para deploy automático:
 
-## 🚀 Deploy
+1. Push para branch `claude/improve-page-elements-011CUKCv4hnPQcjJaAUq5xMB`
+2. GitHub Actions executa:
+   - Instala Node.js 20
+   - Instala dependências
+   - Build do Next.js
+   - Deploy para `gh-pages` branch
+3. GitHub Pages serve a aplicação
+4. Aplicação atualizada em 2-3 minutos
 
-### Vercel
-
-✅ **Deploy ativo e configurado!**
-
-O projeto está automaticamente ligado ao GitHub:
-- Cada commit no `main` dispara novo deploy
-- URL de produção atualizada automaticamente
-- Build e deploy em segundos
-
-### GitHub Pages (alternativo)
-
-```bash
-# Apenas fazer commit do index.html
-git add index.html
-git commit -m "update"
-git push
-```
+**URL de produção:** https://charliethebanker.github.io/photo-editor-n8n/
 
 ## 🔗 Links Úteis
 
-- **Aplicação**: https://photo-editor-n8n-mim1qdk3m-carlos-projects-e332b665.vercel.app
+- **Aplicação Live**: https://charliethebanker.github.io/photo-editor-n8n/
 - **Repositório**: https://github.com/charliethebanker/photo-editor-n8n
 - **n8n Docs**: https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook/
-- **CORS Guide**: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+- **Next.js Docs**: https://nextjs.org/docs
+- **Framer Motion**: https://www.framer.com/motion/
+- **Tailwind CSS**: https://tailwindcss.com/
 
 ## 📄 Licença
 
@@ -259,25 +334,30 @@ MIT License - uso livre para projetos pessoais e comerciais.
 
 ## 🙏 Agradecimentos
 
-- Design inspirado em interfaces modernas de IA
+- Design inspirado em interfaces modernas de edição de fotos
 - Workflow n8n para processamento de imagens
-- Comunidade open-source
+- Comunidade Next.js e React
+- Claude Code para desenvolvimento assistido por IA
 
 ---
 
 ## 🆘 Suporte
 
-**Problemas comuns resolvidos:**
-- ✅ CORS configurado
-- ✅ FormData implementado
-- ✅ Logs de debug detalhados
-- ✅ Mensagens de erro claras
+**Logs de Debug:**
+
+A aplicação inclui logs detalhados no console (F12):
+- 📤 Envio para webhook
+- 📁 Tamanho do arquivo
+- 📡 Status da resposta
+- 📄 Content-Type
+- ✅ Sucesso ou ❌ Erro detalhado
 
 **Precisas de ajuda?**
-1. Verificar logs do console (F12)
+1. Abrir console (F12) e verificar logs
 2. Testar webhook com cURL/Postman
 3. Verificar executions no n8n
-4. Abrir issue no GitHub
+4. Verificar CORS está configurado
+5. Abrir issue no GitHub
 
 ---
 
